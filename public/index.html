@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html ng-app="dbg">
+  <head>
+    <meta charset="utf-8">
+    <title>Digital Board Games</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.5.1/firebase.js"></script>
+    <script src="index.js"></script>
+    <script src="/common/common.js"></script>
+    <link rel="stylesheet" type="text/css" href="/common/common.css">
+  </head>
+  <body ng-controller="DBGController">
+    <div class="banner" >
+      <div class="banner-button" ng-click="startNewGame('test2')">New Game</div>
+      <div class="banner-button" ng-repeat="game in closeGames">{{game.type}}</div>
+    </div>
+  </body>
+</html>

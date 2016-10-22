@@ -1,0 +1,11 @@
+
+.pane {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  display: none;
+}
+.pane:first-child {
+  display: block;
+}
