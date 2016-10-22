@@ -10,14 +10,21 @@ path /locations/{approxLat} {
   read() { isSignedIn() }
 }
 path /locations/{approxLat}/{approxLong} {
-  read() { isSignedIn() }
   write() { isSignedIn() }
 }
-path /locations/{approxLat}/{approxLong}/{gameId} is GameInfo {
-  read() { isSignedIn() && areLocationsClose(getMyLocation(), this.location) && !isExpired(this) }
-  write() { isSignedIn() }
+path /locations/{approxLat}/{approxLong}/{gameId} {
+  
 }
 
+path /games/{id} is Timestamped<GameInfo> {
+  read() { isSignedIn() && !isExpired(this) && areLocationsClose(getMyLocation(), this.location) }
+  write() { true }
+}
+
+
+type Timestamped<T> extends T {
+  timestamp: InitialTimestamp
+}
 
 type GameInfo {
   location: Location,
@@ -49,10 +56,10 @@ isCurrentUser(uid) { auth != null && auth.uid == uid }
 initial(value, init) { value == (prior(value) == null ? init : prior(value)) }
 writeOnce(value) { prior(value) == null ? true : value == prior(value) }
 
-isExpired(data) { now - data.timestamp > 60 * 1000 }
+isExpired(data) { now - data.timestamp > 60 * 60 * 1000 }
 getMyLocation() { root.users[auth.uid].location }
 
-distanceThreshold() { 0.0002 }
+distanceThreshold() { 1000000 }
 areLocationsClose(loc1, loc2) {
   loc1.lat - loc2.lat < distanceThreshold() &&
   loc2.lat - loc1.lat < distanceThreshold() &&

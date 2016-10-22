@@ -14,7 +14,7 @@ angular.module('dbg', [])
   js.me = null;
   js.myLocation = null;
   js.closeGames = [];
-  var myRef, locationsRef;
+  var myRef, locationsRef, gamesRef;
 
 
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -42,6 +42,7 @@ angular.module('dbg', [])
     myRef.child("name").set(js.me.displayName);
 
     locationsRef = firebase.database().ref("locations");
+    gamesRef = firebase.database().ref("games");
 
     setMyLocation(function() {
       findLocalGames();
@@ -52,10 +53,9 @@ angular.module('dbg', [])
   function setMyLocation(callback) {
     navigator.geolocation.getCurrentPosition(function(position) {
       js.myLocation = {
-        lat: position.coords.latitude,
-        long: position.coords.longitude,
+        lat: position.coords.latitude * 1e9,
+        long: position.coords.longitude * 1e9,
       };
-      console.log(js.myLocation);
       myRef.child("location").set(js.myLocation);
 
       if (callback) {
@@ -74,8 +74,8 @@ angular.module('dbg', [])
     var gameInfo = {
       id: uuid(),
       location: {
-        lat: js.myLocation.lat + 1,
-        long: js.myLocation.long + 1,
+        lat: js.myLocation.lat,
+        long: js.myLocation.long,
       },
       type: gameType,
       timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -83,8 +83,8 @@ angular.module('dbg', [])
     myRef.child("currentGame").set(gameInfo);
     var approxLat = approximateCoordinate(js.myLocation.lat);
     var approxLong = approximateCoordinate(js.myLocation.long);
-    locationsRef.child(approxLat).child(approxLong).child(gameInfo.id).set(gameInfo);
-
+    locationsRef.child(approxLat).child(approxLong).child(gameInfo.id).set(true);
+    gamesRef.child(gameInfo.id).set(gameInfo);
     console.log("Created new " + gameType + " game.");
   }
 
@@ -92,25 +92,33 @@ angular.module('dbg', [])
     var approxLat = approximateCoordinate(js.myLocation.lat);
     var approxLong = approximateCoordinate(js.myLocation.long);
     locationsRef.child(approxLat).child(approxLong).once('value').then(function(snapshot) {
-      var gameList = [];
-      var games = snapshot.val() || {};
-      for (var id in games) {
-        gameList.push(games[id]);
+      js.closeGames = [];
+      for (var id in snapshot.val()) {
+        getGameInfo(id, function(gameInfo) {
+          js.closeGames.push(gameInfo);
+
+          // TODO sort by proximity.
+          if(!js.$$phase) {
+            js.$apply();
+          }
+        });
       }
 
-      // TODO sort by proximity.
-
-      js.closeGames = gameList;
-      if(!js.$$phase) {
-        js.$apply();
-      }
     });
 
+  }
+
+  function getGameInfo(gameId, callback) {
+    gamesRef.child(gameId).once('value').then(function(snapshot) {
+      callback(snapshot.val());
+    }).catch(function(error) {
+      console.log(error);
+    });
   }
 
 });
 
 
 function approximateCoordinate(coord) {
-  return Math.floor(coord * 1000);
+  return Math.floor(coord / 1e7);
 }
