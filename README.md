@@ -6,7 +6,7 @@
 * `sudo npm install firebase-bolt`
 * `firebase login`
 * `firebase serve`
-* Now navigate to [localhost:5000](http://localhost:5000)
+* Navigate to [localhost:5000](http://localhost:5000)
 
 ## Deploying
 
