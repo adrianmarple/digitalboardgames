@@ -1,11 +1,12 @@
 # Digital Board Games
 
 ## Getting Started
-
-* `sudo npm install firebase`
+* Install npm
+* `sudo npm install -g firebase-tools`
 * `sudo npm install firebase-bolt`
+* `firebase login`
 * `firebase serve`
-
+* Now navigate to [localhost:5000](http://localhost:5000)
 
 ## Deploying
 
