@@ -29,7 +29,7 @@ angular.module('dbg', [])
   });
 
   function signIn() {
-    firebase.auth().signInWithPopup(provider).then(setUpAfterAuth)
+    firebase.auth().signInWithRedirect(provider).then(setUpAfterAuth)
       .catch(function(error) {
         console.log(error);
       });
