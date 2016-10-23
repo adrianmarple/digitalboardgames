@@ -16,8 +16,10 @@ path /locations/{approxLat}/{approxLong}/{gameId} {
   
 }
 
-path /games/{id} is Timestamped<GameInfo> {
-  read() { isSignedIn() && !isExpired(this) && areLocationsClose(getMyLocation(), this.location) }
+// path /games/{id} is Timestamped<GameInfo> {
+//  read() { isSignedIn() && areLocationsClose(getMyLocation(), this.location) }
+path /games {
+  read() { true }
   write() { true }
 }
 
