@@ -1,0 +1,15 @@
+
+<div>
+  <md-button class="md-raised"
+             ng-click="startRound()"
+             ng-show="game.isBetweenRounds">
+    Start Round
+  </md-button>
+
+  <div ng-show="!game.isBetweenRounds">
+    <md-input-container ng-repeat="cat in latestRound().categories">
+      <label>{{cat}}</label>
+      <input>
+    </md-input-container>
+  </div>
+</div>

@@ -1,61 +1,47 @@
 
-function copyTemplate(className) {
-  var $copy = $(".template." + className).clone();
-  $copy.removeClass("template");
-  return $copy;
-}
-
-// From: http://stackoverflow.com/questions/24597634/how-to-generate-an-array-of-alphabet-in-jquery
-function genCharArray(charA, charZ) {
-    var a = [], i = charA.charCodeAt(0), j = charZ.charCodeAt(0);
-    for (; i <= j; ++i) {
-        a.push(String.fromCharCode(i));
-    }
-    return a;
-}
 
 //===============================================================================
-// P2P:
-
-// Global game state.
-gameJSON = {};
-
-identity = getCookieInt("identity");
-identity = (identity === 0) ? Math.floor(Math.random() * (1 << 30)) : identity;
-setCookie("identity", identity);
-
-// Requires a function updateDisplay to be defined.
-function setUpPusher(gameId) {
-  channelName = window.location.search.replace("?", "");
-  var pusher = new Pusher('f5a15ae956a92622ce16', {
-    authTransport: 'jsonp',
-    authEndpoint: 'https://arm-pusherauth.herokuapp.com/',
-  });
-  var channel = pusher.subscribe('private-' + channelName);
-  
-  channel.bind('pusher:subscription_succeeded', function() {
-    channel.trigger('client-' + gameId + '-new-player', "" + identity);
-    console.log("Success");
-  });
-  channel.bind('pusher:subscription_error', function() {
-    console.log("Error");
-  });
-  channel.bind('client-' + gameId + '-update', function(data) {
-    gameJSON = data;
-    updateDisplay();
-  });
-  channel.bind('client-' + gameId + '-new-player', function(newPlayerId) {
-    console.log("New player " + newPlayerId);
-    channel.trigger('client-' + gameId + '-update', gameJSON);
-  });
-  
-  // Global update function.
-  update = function() {
-    updateDisplay();
-    channel.trigger('client-' + gameId + '-update', gameJSON);
-  };
+// Firbase:
+function update(ref, game) {
+  cleanForFirebase(game);
+  ref.set(game);
+}
+function cleanForFirebase(object) {
+  for (var key in object) {
+    if (key.indexOf("$") > -1) {
+      delete object[key];
+    } else if (typeof object[key] === 'object') {
+      cleanForFirebase(object[key]);
+    }
+  }
 }
 
+function setUpGame($scope, ref, createNewGame) {
+  ref.once('value').then(function(snapshot) {
+    if (!snapshot.val()) {
+      game = createNewGame();
+    } else {
+      console.log("Existing game.");
+      game = snapshot.val();
+    }
+    $scope.game = game;
+    if(!$scope.$$phase) {
+      $scope.$apply();
+    }
+  }).catch(function(error) {
+    console.log(error);
+  });
+}
+
+function keepGameSynced($scope) {
+  gameRef.on('value', function(snapshot) {
+    game = snapshot.val();
+    $scope.game = game;
+    if(!$scope.$$phase) {
+      $scope.$apply();
+    }
+  });
+}
 
 //===============================================================================
 // Mobile:
@@ -89,20 +75,20 @@ function setCookieJSON(cname, cvalue) {
     document.cookie = cname + "=" + JSON.stringify(cvalue) + "; " + expires;
 }
 function getCookieBoolean(cname) {
-	return getCookie(cname) === 'true';
+  return getCookie(cname) === 'true';
 }
 function getCookieInt(cname) {
-	return parseInt(getCookie(cname));
+  return parseInt(getCookie(cname));
 }
 function getCookieFloat(cname) {
-	return parseFloat(getCookie(cname));
+  return parseFloat(getCookie(cname));
 }
 function getCookieJSON(cname) {
-	var cookie = getCookie(cname);
-	if (cookie == "0") {
-		return false;
-	}
-	return JSON.parse(cookie);
+  var cookie = getCookie(cname);
+  if (cookie == "0") {
+    return false;
+  }
+  return JSON.parse(cookie);
 }
 function getCookie(cname) {
     var name = cname + "=";
@@ -119,7 +105,7 @@ function getCookie(cname) {
 //===============================================================================
 // Randomness:
 function randInt(n) {
-	return Math.floor(Math.random() * n);
+  return Math.floor(Math.random() * n);
 }
 
 function randomElement(items) {
@@ -156,6 +142,17 @@ function uuid() {
     s4() + '-' + s4() + s4() + s4();
 }
 
+Array.prototype.randomSubarray = function(size) {
+    var shuffled = this.slice(0), i = this.length, min = i - size, temp, index;
+    while (i-- > min) {
+        index = Math.floor((i + 1) * Math.random());
+        temp = shuffled[index];
+        shuffled[index] = shuffled[i];
+        shuffled[i] = temp;
+    }
+    return shuffled.slice(min);
+}
+
 
 //===============================================================================
 // Methods for Primatives:
@@ -166,51 +163,16 @@ String.prototype.capitalize = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
-// Closure
-(function() {
-  /**
-   * Decimal adjustment of a number.
-   *
-   * @param {String}  type  The type of adjustment.
-   * @param {Number}  value The number.
-   * @param {Integer} exp   The exponent (the 10 logarithm of the adjustment base).
-   * @returns {Number} The adjusted value.
-   */
-  function decimalAdjust(type, value, exp) {
-    // If the exp is undefined or zero...
-    if (typeof exp === 'undefined' || +exp === 0) {
-      return Math[type](value);
-    }
-    value = +value;
-    exp = +exp;
-    // If the value is not a number or the exp is not an integer...
-    if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
-      return NaN;
-    }
-    // Shift
-    value = value.toString().split('e');
-    value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
-    // Shift back
-    value = value.toString().split('e');
-    return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
-  }
 
-  // Decimal round
-  if (!Math.round10) {
-    Math.round10 = function(value, exp) {
-      return decimalAdjust('round', value, exp);
-    };
-  }
-  // Decimal floor
-  if (!Math.floor10) {
-    Math.floor10 = function(value, exp) {
-      return decimalAdjust('floor', value, exp);
-    };
-  }
-  // Decimal ceil
-  if (!Math.ceil10) {
-    Math.ceil10 = function(value, exp) {
-      return decimalAdjust('ceil', value, exp);
-    };
-  }
-})();
+//===============================================================================
+// Misc:
+
+// From: http://stackoverflow.com/questions/24597634/how-to-generate-an-array-of-alphabet-in-jquery
+function genCharArray(charA, charZ) {
+    var a = [], i = charA.charCodeAt(0), j = charZ.charCodeAt(0);
+    for (; i <= j; ++i) {
+        a.push(String.fromCharCode(i));
+    }
+    return a;
+}
+
