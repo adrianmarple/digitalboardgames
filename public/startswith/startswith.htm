@@ -1,4 +1,6 @@
 
+<link rel="stylesheet" type="text/css" href="/startswith/startswith.css">
+
 <div>
   <md-button class="md-raised"
              ng-click="startRound()"
@@ -7,9 +9,23 @@
   </md-button>
 
   <div ng-show="!game.isBetweenRounds">
-    <md-input-container ng-repeat="cat in latestRound().categories">
-      <label>{{cat}}</label>
-      <input>
-    </md-input-container>
+    <h1 class="sw-prompt">
+      Starts with:
+      <span class="sw-starting-letter">{{game.rounds[0].startingLetter.toUpperCase()}}</span>
+    </h1>
+    <h1 class="sw-timer">{{timerString}}</h1>
+    <div class="sw-categories">
+      <md-input-container ng-repeat="cat in game.rounds[0].categories">
+        <label>{{cat}}</label>
+        <input ng-model="game.rounds[0][uid][cat]" ng-disabled="game.rounds[0].timeExpired">
+      </md-input-container>
+    </div>
+
+    <md-button class="md-raised"
+               ng-click="setScore()"
+               ng-show="game.rounds[0].timeExpired">
+      Set Score
+    </md-button>
+
   </div>
 </div>

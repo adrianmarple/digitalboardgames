@@ -2,7 +2,7 @@
 
 //===============================================================================
 // Firbase:
-function update(ref, game) {
+function updateFirebase(ref, game) {
   cleanForFirebase(game);
   ref.set(game);
 }
@@ -17,6 +17,18 @@ function cleanForFirebase(object) {
 }
 
 function setUpGame($scope, ref, createNewGame) {
+  if (firebase.auth().currentUser) {
+    $scope.uid = firebase.auth().currentUser.uid;
+  } else {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        $scope.uid = user.uid;
+      } else {
+        // No user is signed in.
+      }
+    });
+  }
+
   ref.once('value').then(function(snapshot) {
     if (!snapshot.val()) {
       game = createNewGame();
@@ -142,6 +154,10 @@ function uuid() {
     s4() + '-' + s4() + s4() + s4();
 }
 
+Array.prototype.randomElement = function() {
+  return this[randInt(this.length)];
+}
+
 Array.prototype.randomSubarray = function(size) {
     var shuffled = this.slice(0), i = this.length, min = i - size, temp, index;
     while (i-- > min) {
@@ -166,6 +182,15 @@ String.prototype.capitalize = function() {
 
 //===============================================================================
 // Misc:
+
+
+function millisToString(millis) {
+    var totalSeconds = Math.floor(millis / 1000);
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+    seconds = seconds >= 10 ? seconds : '0' + seconds;
+    return minutes + ":" + seconds;
+}
 
 // From: http://stackoverflow.com/questions/24597634/how-to-generate-an-array-of-alphabet-in-jquery
 function genCharArray(charA, charZ) {

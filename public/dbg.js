@@ -48,7 +48,7 @@ function setMyLocation() {
   });
 }
 
-var app = angular.module('dbg', ['ngRoute', 'ngMaterial']);
+var app = angular.module('dbg', ['ngRoute', 'ngMaterial', 'material.svgAssetsCache']);
 app.config(['$routeProvider', function($routeProvider) {
   $routeProvider
   .when("/", {
