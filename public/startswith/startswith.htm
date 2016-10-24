@@ -9,16 +9,42 @@
   </md-button>
 
   <div ng-show="!game.isBetweenRounds">
-    <h1 class="sw-prompt">
+    <h1 class="sw-prompt" ng-show="!game.rounds[0].timeExpired">
       Starts with:
-      <span class="sw-starting-letter">{{game.rounds[0].startingLetter.toUpperCase()}}</span>
+      <span class="sw-starting-letter">{{game.rounds[0].startingLetter}}</span>
     </h1>
+    <h1 class="sw-prompt" ng-show="game.rounds[0].timeExpired">
+      Share your {{game.rounds[0].startingLetter}}-words
+    </h1>
+
+    <h2 class="sw-score"
+        ng-show="game.rounds[0].timeExpired">
+      Score {{calculateRoundScore()}}
+      Total Score: {{calculateTotalScore()}}
+    </h2>
     <h1 class="sw-timer">{{timerString}}</h1>
     <div class="sw-categories">
-      <md-input-container ng-repeat="cat in game.rounds[0].categories">
-        <label>{{cat}}</label>
-        <input ng-model="game.rounds[0][uid][cat]" ng-disabled="game.rounds[0].timeExpired">
-      </md-input-container>
+      <md-grid-list
+            md-cols="1" md-cols-sm="1" md-cols-md="2" md-cols-gt-md="3"
+            md-row-height="4:1" md-gutter="8px" md-gutter-gt-sm="4px" >
+        <md-grid-tile ng-repeat="cat in game.rounds[0].categories"
+              md-rowspan="1" md-colspan="1">
+          <md-input-container>
+            <label>{{cat}}</label>
+            <input ng-model="game.rounds[0][uid][cat].entry"
+                   ng-disabled="game.rounds[0].timeExpired"
+                   ng-blur="update()"
+                   ng-style="{'text-decoration': game.rounds[0][uid][cat].isInvalid ? 'line-through' : 'none'}"
+                   aria-label="{{cat}}">
+          </md-input-container>
+          <md-switch class="md-primary"
+                     ng-model="game.rounds[0][uid][cat].isInvalid"
+                     ng-show="game.rounds[0].timeExpired"
+                     aria-label="invalidate {{cat}}"
+                     style="margin-top: -12px">      
+          </md-switch>
+        </md-grid-tile>
+      </md-grid-list>
     </div>
 
     <md-button class="md-raised"

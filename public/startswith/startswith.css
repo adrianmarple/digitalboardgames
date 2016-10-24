@@ -2,6 +2,9 @@
 .sw-prompt {
 	margin-left: 20px; 
 }
+.sw-score {
+  margin-left: 28px; 
+}
 .sw-starting-letter {
 	font-size: 48px;
 	margin-left: 30px;
