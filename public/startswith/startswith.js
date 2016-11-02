@@ -3,53 +3,6 @@
 
 app.controller('StartsWithController', function($scope, $interval) {
 
-  var POSSIBLE_CATEGORIES = [
-    "Country or State",
-    "Sports Team",
-    "Food",
-    "Car",
-    "Color",
-    "Piece of Clothing",
-    "Material",
-    "Shape",
-    "Band",
-    "Fictional Character",
-    "Historical Figure",
-    "Idiom",
-    "Book",
-    "Movie",
-    "Game",
-    "City",
-    "Office Supply",
-    "Company",
-    "Body Part",
-    "Animal",
-    "Language",
-  ];
-  var POSSIBLE_STARTING_LETTERS = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "P",
-    "R",
-    "S",
-    "T",
-    "W",
-    "X or O",
-    "Q or Z",
-    "U or V",
-  ];
   var CATEGORIES_PER_ROUND = 10;
   var ROUND_DURATION = 1 * 60 * 1000;
 
@@ -111,6 +64,9 @@ app.controller('StartsWithController', function($scope, $interval) {
     for (var i = 0; i < categories.length; i++) {
       try {
         var entry = $scope.game.rounds[0][$scope.uid][categories[i]].entry;
+        if (!entry) {
+          continue;
+        }
       } catch(err) { continue; }
       if ($scope.game.rounds[0][$scope.uid][categories[i]].isInvalid) {
         continue;
@@ -127,7 +83,7 @@ app.controller('StartsWithController', function($scope, $interval) {
       $scope.game.rounds[0][$scope.uid] = {};
     }
     $scope.game.rounds[0][$scope.uid].score = score;
-    
+
     return score;
   };
   $scope.calculateTotalScore = function() {
@@ -146,3 +102,126 @@ app.controller('StartsWithController', function($scope, $interval) {
   $scope.update = update;
   function update() { updateFirebase(gameRef, $scope.game); }
 });
+
+
+var POSSIBLE_CATEGORIES = [
+  "Country or State",
+  "Sports Team",
+  "Food",
+  "Car",
+  "Color",
+  "Piece of Clothing",
+  "Material",
+  "Shape",
+  "Band",
+  "Fictional Character",
+  "Historical Figure",
+  "Someone Famous",
+  "Saying",
+  "Book",
+  "Movie",
+  "TV Show",
+  "Game",
+  "City",
+  "Office Supply",
+  "Company",
+  "Body Part",
+  "Flying Animal",
+  "Land Animal",
+  "Ocean Dweller",
+  "Language",
+  "Drink",
+  "Fictional Place",
+  "Title or Honorific",
+  "Something Cold",
+  "Something Hot",
+  "Something Sticky",
+  "Something Soft",
+  "Something Hard",
+  "Something Disposable",
+  "Something Priceless",
+  "Something Smelly",
+  "Something Scary",
+  "Something Bright",
+  "Something Black",
+  "Something Red",
+  "Something Blue",
+  "Something Green",
+  "Something White",
+  "Digital Service",
+  "Insect",
+  "Plant or Fungus",
+  "Mammal",
+  "Bird",
+  "Reptile or Amphibian",
+  "Fad",
+  "Type of Weather",
+  "Hobby",
+  "Acronym",
+  "Hobby",
+  "Electronic Device",
+  "Car Part",
+  "Athlete",
+  "Four-letter Word",
+  "Tool",
+  "Term of Endearment",
+  "School Subject",
+  "Musical Instrument",
+  "Something that increases your heart rate",
+  "Nickname",
+  "College or University",
+  "Item you can see right now",
+  "Measurement Term",
+  "Capital",
+  "Candy",
+  "Sports Equipment",
+  "Spice or Herb",
+  "Allergy",
+  "Restaurant",
+  "Fruit",
+  "Weapon",
+  "Toy",
+  "Something Round",
+  "Something with Corners",
+  "Halloween Costume",
+  "Song",
+  "Villain or Monster",
+  "Word Associated with Money",
+  "Vegetable",
+  "Occupation",
+  "Cartoon Character",
+  "Personality Trait",
+  "Something Scientific",
+  "Something Astronomical",
+  "Something Mathematical",
+  "Sound",
+  "Something that comes in Pairs",
+  "Something with Claws",
+  "Something Loud",
+  "Word with double letters",
+  "Word that starts and ends with the same letter",
+];
+var POSSIBLE_STARTING_LETTERS = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I or Y",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "P",
+  "R",
+  "S",
+  "T",
+  "W",
+  "X or O",
+  "Q or Z",
+  "U or V",
+];
