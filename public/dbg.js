@@ -60,6 +60,13 @@ app.config(['$routeProvider', function($routeProvider) {
       controller: "StartsWithController",
   });
 }]);
+app.config(function($mdThemingProvider) {
+  $mdThemingProvider.theme('default')
+    .primaryPalette('indigo')
+    .accentPalette('purple')
+    .dark();
+});
+
 app.controller('DBGController', function($scope, $timeout) {
   
   var js = $scope;

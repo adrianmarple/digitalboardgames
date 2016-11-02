@@ -37,6 +37,7 @@ function setUpGame($scope, ref, createNewGame) {
       game = snapshot.val();
     }
     $scope.game = game;
+    // console.log(game);
     if(!$scope.$$phase) {
       $scope.$apply();
     }
