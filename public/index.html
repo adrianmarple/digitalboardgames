@@ -22,6 +22,22 @@
 </head>
 
 <body ng-controller="DBGController">
+
+  <div layout="row" ng-controller="NavController">
+    <md-sidenav md-component-id="left" class="md-sidenav-left">
+      <md-button class="dbg-nav-option"> Create Game </md-button>
+      <md-button class="dbg-nav-option"> Join Game </md-button>
+      <md-button class="dbg-nav-option"> Leave Game </md-button>
+    </md-sidenav>
+
+    <md-content>
+      <md-button ng-click="toggleSideNav()" aria-label="menu">
+      <md-icon md-svg-icon="img/icons/menu.svg"></md-icon>
+      </md-button>
+    </md-content>
+  </div>
+
   <div ng-view></div>
+
 </body>
 </html>

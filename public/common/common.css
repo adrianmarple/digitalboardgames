@@ -40,3 +40,12 @@ div {
 	border-radius: 8px;
 	cursor: pointer;
 }
+
+.md-sidenav-left {
+	width: 160px;
+	text-align: center;
+}
+
+.dbg-nav-option {
+	width: 128px;
+}
