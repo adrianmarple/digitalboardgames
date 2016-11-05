@@ -129,7 +129,15 @@ app.controller('DBGController', function($scope, $timeout) {
 
 });
 
-
 function approximateCoordinate(coord) {
   return Math.floor(coord / 1e7);
-}
+};
+
+app.controller('NavController', function($scope, $mdSidenav) {
+  $scope.openLeftMenu = function() {
+    $mdSidenav('left').open();
+  };
+  $scope.closeLeftMenu = function() {
+    $mdSidenav('left').close();
+  };
+});
