@@ -22,6 +22,24 @@
 </head>
 
 <body ng-controller="DBGController">
-  <div ng-view></div>
+  <!-- <div ng-view></div> -->
+
+<!--RSH ADDED-->
+  <div layout="row" ng-controller="NavController">
+    <md-sidenav md-component-id="left" class="md-sidenav-left">
+      <md-button class="game-nav"> Create Game </md-button>
+      <md-button class="game-nav"> Join Game </md-button>
+      <md-button class="game-nav"> Leave Game </md-button>
+    </md-sidenav>
+
+    <md-content>
+<!--       Center Content -->
+      <md-button ng-click="openLeftMenu()">
+      <md-icon md-svg-icon="img/icons/menu.svg"></md-icon>
+      </md-button>
+    </md-content>
+  </div>
+<!--RSH ADDED-->
+
 </body>
 </html>

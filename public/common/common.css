@@ -35,8 +35,23 @@ div {
 	margin: 40px auto;
 	font-size: 24px;
 	line-height: 60px;
-	background-color: black;
+	/*background-color: blue;*/
 	border: 3px solid white;
 	border-radius: 8px;
 	cursor: pointer;
+}
+
+.md-sidenav-left {
+	/*background-color: red;*/
+	width: 160px;
+	text-align: center;
+}
+
+.md-button {
+	/*background-color: blue;*/
+}
+
+.game-nav {
+	max-width: auto;
+	background-color: green;
 }

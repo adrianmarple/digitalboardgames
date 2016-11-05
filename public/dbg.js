@@ -122,7 +122,14 @@ app.controller('DBGController', function($scope, $timeout) {
 
 });
 
-
 function approximateCoordinate(coord) {
   return Math.floor(coord / 1e7);
-}
+};
+
+// BEGIN RSH ADDED
+app.controller('NavController', function($scope, $mdSidenav) {
+  $scope.openLeftMenu = function() {
+    $mdSidenav('left').toggle();
+  };
+});
+// END RSH ADDED
