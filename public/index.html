@@ -25,17 +25,18 @@
 
   <div layout="row" ng-controller="NavController">
     <md-sidenav md-component-id="left" class="md-sidenav-left">
-      <md-button class="dbg-nav-option"> Create Game </md-button>
+      <md-button class="dbg-nav-option" ng-click="startNewGame('startswith')"> Create Game </md-button>
+
       <md-button class="dbg-nav-option"> Join Game </md-button>
-      <md-button class="dbg-nav-option"> Leave Game </md-button>
+      
+      <a href="#/">
+        <md-button class="dbg-nav-option"> Leave Game </md-button>
+      </a>
     </md-sidenav>
 
-    <md-content>
-<!--       Center Content -->
-      <md-button ng-click="openLeftMenu()" aria-label="menu">
+    <md-button ng-click="openLeftMenu()" aria-label="menu">
       <md-icon md-svg-icon="img/icons/menu.svg"></md-icon>
-      </md-button>
-    </md-content>
+    </md-button>
   </div>
 
   <div ng-view></div>

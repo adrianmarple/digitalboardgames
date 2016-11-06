@@ -1,17 +1,20 @@
 
 
 
-app.controller('StartsWithController', function($scope, $interval) {
+app.controller('StartsWithController', function(
+  $scope, $interval, GameInfoService, FirebaseService) {
 
   var CATEGORIES_PER_ROUND = 10;
   var ROUND_DURATION = 1 * 60 * 1000;
 
   var gameRef = firebase.database().ref("games/idgoeshere/game");
 
+  GameInfoService.setUpGame(createNewStartsWithGame, function(game) {
+    $scope.uid = FirebaseService.getUid();
+    GameInfoService.keepGameSynced($scope);
+  });
 
-  setUpGame($scope, gameRef, createNewGame);
-
-  function createNewGame() {
+  function createNewStartsWithGame() {
     console.log("Creating new game.");
     var game = {
       rounds: [],
@@ -27,6 +30,10 @@ app.controller('StartsWithController', function($scope, $interval) {
       startTime: new Date().getTime(),
       timeExpired: false,
     }
+    if (!$scope.game.rounds){
+      $scope.game.rounds = [];
+    }
+
     $scope.game.rounds.unshift(round);
     $scope.game.isBetweenRounds = false;
     update();
@@ -35,7 +42,7 @@ app.controller('StartsWithController', function($scope, $interval) {
 
   $scope.timerString = "";
   var setTimerString = function() {
-    if (!$scope.game || !$scope.game.rounds[0]) {
+    if (!$scope.game || !$scope.game.rounds || !$scope.game.rounds[0]) {
       $scope.timerString = "";
       return;
     }
@@ -100,7 +107,7 @@ app.controller('StartsWithController', function($scope, $interval) {
   }
 
   $scope.update = update;
-  function update() { updateFirebase(gameRef, $scope.game); }
+  function update() { GameInfoService.save(); }
 });
 
 

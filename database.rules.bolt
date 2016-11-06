@@ -33,6 +33,7 @@ type GameInfo {
   type: String,
   id: String,
   timestamp: InitialTimestamp,
+  game: Object | Null,
 }
 
 type UUID extends String {
