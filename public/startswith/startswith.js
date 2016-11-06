@@ -5,14 +5,11 @@ app.controller('StartsWithController', function(
   $scope, $interval, GameInfoService, FirebaseService) {
 
   var CATEGORIES_PER_ROUND = 10;
-  var ROUND_DURATION = 1 * 60 * 1000;
+  var ROUND_DURATION = 2 * 60 * 1000;
 
   var gameRef = firebase.database().ref("games/idgoeshere/game");
 
-  GameInfoService.setUpGame(createNewStartsWithGame, function(game) {
-    $scope.uid = FirebaseService.getUid();
-    GameInfoService.keepGameSynced($scope);
-  });
+  GameInfoService.setUpGame($scope, createNewStartsWithGame);
 
   function createNewStartsWithGame() {
     console.log("Creating new game.");
@@ -174,7 +171,7 @@ var POSSIBLE_CATEGORIES = [
   "Term of Endearment",
   "School Subject",
   "Musical Instrument",
-  "Something that increases your heart rate",
+  "Something Heart-pounding",
   "Nickname",
   "College or University",
   "Item you can see right now",
@@ -206,7 +203,6 @@ var POSSIBLE_CATEGORIES = [
   "Something with Claws",
   "Something Loud",
   "Word with double letters",
-  "Word that starts and ends with the same letter",
 ];
 var POSSIBLE_STARTING_LETTERS = [
   "A",

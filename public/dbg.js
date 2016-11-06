@@ -56,7 +56,7 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
     });
   };
 
-  js.setUpGame = function(createNewGame, callback) {
+  js.setUpGame = function($scope, createNewGame) {
     FirebaseService.waitUntilInitialized(function() {
       if (!js.gameRef) {
         js.createGame($location.url());
@@ -70,7 +70,8 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
         }
         js.gameInfo.game = game;
         js.save();
-        callback(game);
+        $scope.uid = FirebaseService.getUid();
+        keepGameSynced($scope);
       }).catch(function(error) {
         console.log(error);
       });
@@ -80,7 +81,6 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
   js.save = function(game) {
     cleanForFirebase(js.gameInfo.game);
     js.gameRef.set(js.gameInfo.game);
-    console.log(js.gameInfo.game);
   };
   function cleanForFirebase(object) {
     for (var key in object) {
@@ -92,7 +92,7 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
     }
   }
 
-  js.keepGameSynced = function($scope) {
+  function keepGameSynced($scope) {
     js.gameRef.on('value', function(snapshot) {
       js.gameInfo.game = snapshot.val();
       $scope.game = js.gameInfo.game;
@@ -181,25 +181,31 @@ app.controller('DBGController', function(
   var js = $scope;
   js.closeGames = [];
   js.currentGames = [];
-  // $timeout(findLocalGames, 1000);
+  FirebaseService.waitUntilInitialized(findLocalGames);
 
-  js.startNewGame = startNewGame;
-  function startNewGame(gameType) {
+  js.startNewGame = function(gameType) {
     $location.url(gameType);
     GameInfoService.createGame(gameType);
+  };
+
+  js.leaveGame = function() {
+    $location.url("");
+    findLocalGames();
   }
+
 
   function findLocalGames() {
     var location = FirebaseService.location;
     var approxLat = approximateCoordinate(location.lat);
     var approxLong = approximateCoordinate(location.long);
-    locationsRef.child(approxLat).child(approxLong).once('value').then(function(snapshot) {
+    var myGridSquareRef = FirebaseService.locationsRef.child(approxLat).child(approxLong);
+    myGridSquareRef.once('value').then(function(snapshot) {
       js.closeGames = [];
       for (var id in snapshot.val()) {
         getGameInfo(id, function(gameInfo) {
           js.closeGames.push(gameInfo);
 
-          // TODO sort by proximity.
+          // TODO sort by recency.
           if(!js.$$phase) {
             js.$apply();
           }
@@ -210,7 +216,7 @@ app.controller('DBGController', function(
   }
 
   function getGameInfo(gameId, callback) {
-    gamesRef.child(gameId).once('value').then(function(snapshot) {
+    FirebaseService.gamesRef.child(gameId).once('value').then(function(snapshot) {
       callback(snapshot.val());
     }).catch(function(error) {
       console.log(error);

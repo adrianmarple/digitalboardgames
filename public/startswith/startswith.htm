@@ -40,6 +40,7 @@
           <md-switch class="md-primary"
                      ng-model="game.rounds[0][uid][cat].isInvalid"
                      ng-show="game.rounds[0].timeExpired"
+                     ng-disabled="!game.rounds[0][uid][cat].entry"
                      aria-label="invalidate {{cat}}"
                      style="margin-top: -12px">      
           </md-switch>
