@@ -67,7 +67,6 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
         var myUid = FirebaseService.getUid();
         game.participants = game.participants || {}
         game.participants[myUid] = FirebaseService.getBasicInfo();
-        console.log(game);
         js.gameInfo.game = game;
         js.save();
         $scope.uid = myUid;
@@ -95,7 +94,8 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
   function keepGameSynced($scope) {
     js.gameRef.on('value', function(snapshot) {
       js.gameInfo.game = snapshot.val();
-      $scope.game = js.gameInfo.game;
+      $scope.game = $scope.game || {};
+      angular.merge($scope.game, js.gameInfo.game);
       if(!$scope.$$phase) {
         $scope.$apply();
       }
