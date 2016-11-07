@@ -22,18 +22,12 @@ app.config(function($mdThemingProvider) {
 app.service('GameInfoService', function($location, $routeParams, FirebaseService) {
   var js = this;
   js.gameInfo = {};
-  FirebaseService.waitUntilInitialized(function() {
-    if ($routeParams.id) {
-      js.gameRef = FirebaseService.gamesRef.child($routeParams.id).child("game");
-    }
-  });
 
   js.createGame = function(gameType) {
     FirebaseService.waitUntilInitialized(function() {
       var id = uuid();
       $location.search('id', id);
       var location = FirebaseService.location;
-
       js.gameInfo = {
         id: id,
         location: {
@@ -42,6 +36,7 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
         },
         type: gameType,
         timestamp: firebase.database.ServerValue.TIMESTAMP,
+        // participants: [FirebaseService.getBasicInfo()],
       }
       FirebaseService.myRef.child("currentGame").set(js.gameInfo);
 
@@ -52,12 +47,13 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
       FirebaseService.gamesRef.child(id).set(js.gameInfo);
       js.gameRef = FirebaseService.gamesRef.child(id).child("game");
 
-      console.log("Created new " + gameType + " game.");
+      console.log("Created new " + gameType + " game: " + id);
     });
   };
 
-  js.setUpGame = function($scope, createNewGame) {
+  js.setUpOrJoinGame = function($scope, createNewGame) {
     FirebaseService.waitUntilInitialized(function() {
+      setGameRef();
       if (!js.gameRef) {
         js.createGame($location.url());
       }
@@ -65,12 +61,16 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
         if (!snapshot.val()) {
           game = createNewGame();
         } else {
-          console.log("Existing game.");
+          console.log("Joining game.");
           game = snapshot.val();
         }
+        var myUid = FirebaseService.getUid();
+        game.participants = game.participants || {}
+        game.participants[myUid] = FirebaseService.getBasicInfo();
+        console.log(game);
         js.gameInfo.game = game;
         js.save();
-        $scope.uid = FirebaseService.getUid();
+        $scope.uid = myUid;
         keepGameSynced($scope);
       }).catch(function(error) {
         console.log(error);
@@ -100,6 +100,12 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
         $scope.$apply();
       }
     });
+  }
+
+  function setGameRef() {
+    if ($routeParams.id) {
+      js.gameRef = FirebaseService.gamesRef.child($routeParams.id).child("game");
+    }    
   }
 });
 
@@ -153,8 +159,8 @@ app.service('FirebaseService', function() {
   function setMyLocation(callback) {
     navigator.geolocation.getCurrentPosition(function(position) {
       fire.location = {
-        lat: position.coords.latitude * 1e9,
-        long: position.coords.longitude * 1e9,
+        lat: Math.round(position.coords.latitude * 1e9),
+        long: Math.round(position.coords.longitude * 1e9),
       };
       fire.myRef.child("location").set(fire.location);
       callback();
@@ -171,9 +177,19 @@ app.service('FirebaseService', function() {
   };
 
   fire.getUid = function() {
-    return firebase.auth().currentUser.uid;
+    return fire.me.uid;
   };
+
+  fire.getBasicInfo = function() {
+    return {
+      uid: fire.me.uid,
+      name: fire.me.displayName,
+      email: fire.me.email,
+      pic: fire.me.photoURL,
+    }
+  }
 });
+
 
 app.controller('DBGController', function(
     $scope, $location, $timeout, GameInfoService, FirebaseService) {
@@ -188,11 +204,21 @@ app.controller('DBGController', function(
     GameInfoService.createGame(gameType);
   };
 
+  js.joinGame = function(gameId, gameType) {
+    $location.url(gameType);
+    $location.search('id', gameId);
+  };
+
   js.leaveGame = function() {
+    GameInfoService.gameRef.child("participants").child(FirebaseService.getUid())
+      .set(null);
     $location.url("");
     findLocalGames();
   }
 
+  window.onbeforeunload = function(event) {
+    js.leaveGame();  
+  };
 
   function findLocalGames() {
     var location = FirebaseService.location;
@@ -231,7 +257,7 @@ app.controller('DBGController', function(
 });
 
 function approximateCoordinate(coord) {
-  return Math.floor(coord / 1e7);
+  return Math.round(coord / 1e7);
 };
 
 app.controller('NavController', function($scope, $mdSidenav) {

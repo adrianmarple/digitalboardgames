@@ -41,6 +41,12 @@ div {
 	cursor: pointer;
 }
 
+.avatar {
+	width: 24px;
+	height: 24px;
+	border-radius: 1000px;
+}
+
 .md-sidenav-left {
 	width: 160px;
 	text-align: center;

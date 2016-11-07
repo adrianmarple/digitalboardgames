@@ -2,13 +2,20 @@
 <link rel="stylesheet" type="text/css" href="/startswith/startswith.css">
 
 <div>
-  <md-button class="md-raised"
-             ng-click="startRound()"
-             ng-show="game.isBetweenRounds">
-    Start Round
-  </md-button>
+  <center ng-show="game && isBetweenRounds()">
+    <md-button class="md-raised"
+               ng-click="startRound()"
+               ng-disabled="shouldWaitForNextRound()">
+      Start Round
+    </md-button>
+    <div ng-repeat="participant in game.participants">
+      <img class="avatar" src="{{participant.pic}}">
+      {{participant.name}}
+      Score: {{calculateTotalScore(participant.uid)}}
+    </div>
+  </center>
 
-  <div ng-show="!game.isBetweenRounds">
+  <div ng-show="game && !isBetweenRounds()">
     <h1 class="sw-prompt" ng-show="!game.rounds[0].timeExpired">
       Starts with:
       <span class="sw-starting-letter">{{game.rounds[0].startingLetter}}</span>

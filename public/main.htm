@@ -1,5 +1,10 @@
 
 <center>
   <div class="banner-button" ng-click="startNewGame('startswith')">New Game</div>
-  <div class="banner-button" ng-repeat="game in closeGames">{{game.type}}</div>
+  <div class="banner-button"
+       ng-repeat="game in closeGames"
+       ng-click="joinGame(game.id, game.type)"
+       ng-show="game.game.participants">
+    {{game.type}}
+  </div>
 </center>

@@ -9,7 +9,7 @@ app.controller('StartsWithController', function(
 
   var gameRef = firebase.database().ref("games/idgoeshere/game");
 
-  GameInfoService.setUpGame($scope, createNewStartsWithGame);
+  GameInfoService.setUpOrJoinGame($scope, createNewStartsWithGame);
 
   function createNewStartsWithGame() {
     console.log("Creating new game.");
@@ -19,6 +19,23 @@ app.controller('StartsWithController', function(
     };
     return game;
   }
+
+  $scope.isBetweenRounds = function() {
+    return !$scope.game.rounds || $scope.game.rounds[0][$scope.uid].done;
+  };
+  $scope.shouldWaitForNextRound = function() {
+    try {
+      var round = $scope.game.rounds[0];
+      var participants = $scope.game.participants;
+    } catch(err) {
+      return false;
+    }
+    var shouldWait = false;
+    for (var uid in participants) {
+      shouldWait = shouldWait || !round[uid] || !round[uid].done;
+    }
+    return shouldWait;
+  };
 
   $scope.startRound = function() {
     var round = {
@@ -54,49 +71,49 @@ app.controller('StartsWithController', function(
   $interval(setTimerString, 100);
 
   $scope.setScore = function() {
-    $scope.game.isBetweenRounds = true;
+    $scope.game.rounds[0][$scope.uid].done = true;
     update();
   }
 
   $scope.calculateRoundScore = function() {
     try {
-      var categories = $scope.game.rounds[0].categories
+      var round = $scope.game.rounds[0];
+      var categories = round.categories
     } catch(err) {
       return 0;
     }
     var score = 0;
     for (var i = 0; i < categories.length; i++) {
       try {
-        var entry = $scope.game.rounds[0][$scope.uid][categories[i]].entry;
+        var entry = round[$scope.uid][categories[i]].entry;
         if (!entry) {
           continue;
         }
       } catch(err) { continue; }
-      if ($scope.game.rounds[0][$scope.uid][categories[i]].isInvalid) {
+      if (round[$scope.uid][categories[i]].isInvalid) {
         continue;
       }
 
-      var startingLetter = $scope.game.rounds[0].startingLetter;
+      var startingLetter = round.startingLetter;
       score += entry.toUpperCase().split(" ").filter(function(word) {
         return word[0] == startingLetter[0] ||
             word[0] == startingLetter[startingLetter.length - 1];
       }).length;
     }
 
-    if (!$scope.game.rounds[0][$scope.uid]) {
-      $scope.game.rounds[0][$scope.uid] = {};
-    }
-    $scope.game.rounds[0][$scope.uid].score = score;
+    round[$scope.uid] = round[$scope.uid] || {};
+    round[$scope.uid].score = score;
 
     return score;
   };
-  $scope.calculateTotalScore = function() {
+  $scope.calculateTotalScore = function(uid) {
+    var uid = uid || $scope.uid;
     if (!$scope.game || !$scope.game.rounds) {
       return 0;
     }
     return $scope.game.rounds.reduce(function(value, round) {
       try {
-        return value + round[$scope.uid].score;
+        return value + round[uid].score;
       } catch(err) {
         return value;
       }
