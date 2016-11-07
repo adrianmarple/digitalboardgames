@@ -1,6 +1,6 @@
 
 
-var app = angular.module('dbg', ['ngRoute', 'ngMaterial', 'material.svgAssetsCache']);
+var app = angular.module('dbg', ['ngRoute', 'ngMaterial']);
 app.config(['$routeProvider', function($routeProvider) {
   $routeProvider
   .when("/", {
