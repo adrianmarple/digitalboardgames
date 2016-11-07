@@ -42,6 +42,7 @@
                    ng-disabled="game.rounds[0].timeExpired"
                    ng-blur="update()"
                    ng-style="{'text-decoration': game.rounds[0][uid][cat].isInvalid ? 'line-through' : 'none'}"
+                   ng-change="update()"
                    aria-label="{{cat}}">
           </md-input-container>
           <md-switch class="md-primary"

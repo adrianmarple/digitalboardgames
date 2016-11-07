@@ -71,7 +71,9 @@ app.controller('StartsWithController', function(
   $interval(setTimerString, 100);
 
   $scope.setScore = function() {
-    $scope.game.rounds[0][$scope.uid].done = true;
+    var round = $scope.game.rounds[0];
+    round[$scope.uid] = round[$scope.uid] || {};
+    round[$scope.uid].done = true;
     update();
   }
 

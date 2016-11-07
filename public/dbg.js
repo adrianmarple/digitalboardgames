@@ -94,8 +94,7 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
   function keepGameSynced($scope) {
     js.gameRef.on('value', function(snapshot) {
       js.gameInfo.game = snapshot.val();
-      $scope.game = $scope.game || {};
-      angular.merge($scope.game, js.gameInfo.game);
+      $scope.game = js.gameInfo.game;
       if(!$scope.$$phase) {
         $scope.$apply();
       }
