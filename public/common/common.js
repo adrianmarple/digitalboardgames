@@ -1,5 +1,18 @@
 
-
+function defaultTo(f, defaultValue) {
+  return function() {
+    try {
+      var fVal = f.apply(this, arguments);
+      if (fVal == undefined) {
+        return defaultValue;
+      } else {
+        return fVal;
+      }
+    } catch(err) {
+      return defaultValue;
+    }
+  };
+}
 
 //===============================================================================
 // Mobile:
@@ -86,7 +99,7 @@ function shuffle(o){
     return o;
 }
 
-function coinflip() {
+function coinFlip() {
   return Math.random() > 0.5;
 }
 
@@ -103,16 +116,11 @@ function uuid() {
 Array.prototype.randomElement = function() {
   return this[randInt(this.length)];
 }
-
 Array.prototype.randomSubarray = function(size) {
-    var shuffled = this.slice(0), i = this.length, min = i - size, temp, index;
-    while (i-- > min) {
-        index = Math.floor((i + 1) * Math.random());
-        temp = shuffled[index];
-        shuffled[index] = shuffled[i];
-        shuffled[i] = temp;
-    }
-    return shuffled.slice(min);
+  return randomSubarray(this, size);
+}
+Array.prototype.shuffle = function() {
+  return shuffle(this);
 }
 
 
@@ -124,7 +132,13 @@ Number.prototype.mod = function(n) {
 String.prototype.capitalize = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 };
-
+Object.size = function(obj) {
+  var size = 0, key;
+  for (key in obj) {
+    if (obj.hasOwnProperty(key)) size++;
+  }
+  return size;
+};
 
 //===============================================================================
 // Misc:

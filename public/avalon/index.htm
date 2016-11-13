@@ -1,0 +1,121 @@
+
+<link rel="stylesheet" type="text/css" href="/avalon/index.css">
+
+<center>
+  <div id="quests">
+    <div class="quest"
+         ng-repeat="quest in game.quests"
+         ng-class="quest.outcome">
+      {{quest.participantCount}}
+    </div>
+  </div>
+
+  <div id="actions">
+    <!-- Very beginning of game -->
+    <div id="start" ng-show="!game.roles" ng-click="assignRoles()">
+      Assign Roles
+    </div>
+
+    <!-- Establish a team -->
+    <div ng-show="game.roles && !game.finalized && !game.assassination && !game.victory">
+      <div id="set-team"
+           ng-show="game.captain == uid"
+           ng-class="{disabled: game.teamSize != game.quests[game.quest].participantCount}"
+           ng-click="setTeam()">
+        Finalize Team
+      </div>
+      <div class="pending"
+           ng-show="game.captain != uid">
+        {{game.participants[game.captain].name}} is choosing a team.
+      </div>
+    </div>
+
+    <!-- Vote on team -->
+    <div ng-show="game.finalized && !game.areAllVotesIn && !game.questing">
+      <div id="vote" ng-show="game.votes[uid] == undefined">
+        <div id="accept" ng-click="vote(true)">Accept</div>
+        <div id="reject" ng-click="vote(false)">Reject</div>
+      </div>
+      <div class="pending" ng-show="game.votes[uid] != undefined">
+        Waiting for votes.
+      </div>
+    </div>
+    <div id="vote-continue"
+         ng-show="game.areAllVotesIn && !game.questing"
+         ng-click="voteContinue()">
+      Continue
+    </div>
+
+    <!-- Carry out quest -->
+    <div ng-show="game.questing && !game.isQuestDone">
+      <div class="pending"
+           ng-show="game.outcomes[uid] || !game.team[uid]">
+        Questing...
+      </div>
+      <div id="outcome"
+           ng-show="!(game.outcomes[uid] || !game.team[uid])">
+        <div ng-repeat="outcome in generateOutcomes()"
+             id="{{outcome}}"
+             ng-click="quest(outcome)">
+          {{outcome.capitalize()}}
+        </div>
+      </div>
+    </div>
+    <div id="quest-continue"
+         ng-show="game.isQuestDone"
+         ng-class="game.questOutcome"
+         ng-click="questContinue()">
+      <div class="outcome" ng-repeat="o in getOutcomes()" ng-class="o.indexOf('succeed') ? 'fail' : 'succeed'">
+      </div>
+      Quest {{game.questOutcome == 'good' ? 'Succeeds' : 'Fails'}}
+    </div>
+
+    <div ng-show="game.assassination">
+      <div class="pending"
+           ng-show="game.roles[uid] != 'assassin'">
+        Assassination in Progress
+      </div>
+      <div class="pending"
+           ng-show="game.roles[uid] == 'assassin'">
+        Try to assassinate Merlin
+      </div>
+    </div>
+  </div>
+
+  <div id="players">
+    <div class="player"
+         ng-repeat="participant in game.participants"
+         ng-class="[canSeeEvil() ? ROLE_ALIGNMENT[game.roles[participant.uid]] : '',
+           {'team-member': game.team[participant.uid]} ]"
+         ng-click="toggleTeamMember(participant.uid)">
+      <img class="avatar" src="{{participant.pic}}">
+      {{participant.name}}
+      <div class="role"
+           ng-class="apparentRole(participant.uid)">?
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <img class="visibility"
+         src="/avalon/visible.svg"
+         ng-show="visible"
+         ng-click="visible = !visible">
+    <img class="visibility"
+         src="/avalon/invisible.svg"
+         ng-show="!visible"
+         ng-click="visible = !visible">
+  </div>
+
+  <div id="victory"
+       class="banner"
+       ng-class="game.victory"
+       ng-show="game.victory">
+    {{game.victory.capitalize()}} Prevails
+
+    <div id="new-game" ng-click="setUpNewGame()">
+      New Game
+    </div>
+  </div>
+
+</center>

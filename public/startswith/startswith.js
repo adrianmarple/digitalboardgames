@@ -7,8 +7,6 @@ app.controller('StartsWithController', function(
   var CATEGORIES_PER_ROUND = 10;
   var ROUND_DURATION = 2 * 60 * 1000;
 
-  var gameRef = firebase.database().ref("games/idgoeshere/game");
-
   GameInfoService.setUpOrJoinGame($scope, createNewStartsWithGame);
 
   function createNewStartsWithGame() {

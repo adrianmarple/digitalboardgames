@@ -1,0 +1,160 @@
+.quest, .player,
+#start, #set-team, #vote-continue, #quest-continue,
+#accept, #reject, #succeed, #fail,
+#new-game {
+  border-radius: 100px;
+  border: 4px solid #757575;
+  height: 144px;
+  line-height: 144px;
+  font-size: 48px;
+}
+
+.pending {
+  height: 144px;
+  line-height: 144px;
+  font-size: 48px; 
+}
+
+.quest {
+  display: inline-block;
+  width: 144px;
+  font-weight: 700;
+  margin: 16px;
+}
+
+.evil {
+  border-color: #d32f2f !important;
+  background-color: #6b0f0f !important;
+}
+.good {
+  border-color: #1976D2 !important;
+  background-color: #062351 !important;
+}
+
+.disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+#actions {
+  height: 150px;
+  padding: 65px;
+}
+#start, #set-team, #vote-continue, #quest-continue {
+  width: 650px;
+  margin: 0 48px;
+  cursor: pointer;
+  background-color: #424242;
+}
+#start:hover {
+  background-color: #616161;
+  border-color: #E0E0E0;
+}
+
+#accept, #reject, #succeed, #fail {
+  display: inline-block;
+  width: 300px;
+  margin: 0 8px;
+  cursor: pointer;
+}
+#accept, #succeed {
+  background-color: #EEE;
+  color: black;
+}
+#reject, #fail {
+  background-color: black;
+}
+
+.outcome {
+  width: 64px;
+  height: 64px;
+  display: inline-block;
+  filter: invert(100%);
+  vertical-align: text-bottom;
+}
+.outcome.succeed {
+  background-image: url("/avalon/accept.svg");
+}
+.outcome.fail {
+  background-image: url("/avalon/reject.svg");
+}
+
+
+.player {
+  margin: 24px;
+  width: 800px;
+}
+
+.team-member {
+  box-shadow: 0 0 48px white;
+}
+
+.avatar {
+  float: left;
+  width: 144px;
+  height: 144px;
+  opacity: 0.5;
+}
+.role {
+  float: right;
+  width: 144px;
+  height: 144px;
+  border-radius: 144px;
+  color: transparent;
+  font-size: 64px;
+  line-height: 144px;
+}
+.merlin {
+  background-image: url("/avalon/merlin.jpg");
+}
+.mordred {
+  background-image: url("/avalon/mordred.jpg");
+}
+.percival {
+  background-image: url("/avalon/percival.jpg");
+}
+.assassin {
+  background-image: url("/avalon/assassin.jpg");
+}
+.knight {
+  background-image: url("/avalon/knight.jpg");
+}
+.minion {
+  background-image: url("/avalon/minion.jpg");
+}
+.qmark {
+  color: #AAA;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.accept {
+  background-color: white;
+  background-image: url("/avalon/accept.svg");
+}
+.reject {
+  background-color: black;
+  background-image: url("/avalon/reject.svg");
+}
+
+.visibility {
+  width: 100px;
+  height: 100px;
+  opacity: 0.5;
+  float: right;
+  margin: 24px 48px;
+}
+
+#victory {
+  padding-top: 240px;
+}
+#victory.evil {
+  background-color: rgba(107, 15, 15, 0.6) !important;
+}
+#victory.good {
+  background-color: rgba(6, 35, 81, 0.6) !important;
+}
+
+#new-game {
+  width: 500px;
+  margin: 50px auto;
+  background-color: black;
+}

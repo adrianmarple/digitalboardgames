@@ -6,8 +6,11 @@ app.config(['$routeProvider', function($routeProvider) {
   .when("/", {
       templateUrl : "/main.htm",
   })
+  .when("/avalon", {
+      templateUrl : "/avalon/index.htm",
+      controller: "AvalonController",
+  })
   .when("/startswith", {
-      // template : "Starts with..."
       templateUrl : "/startswith/startswith.htm",
       controller: "StartsWithController",
   });
@@ -65,7 +68,7 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
           game = snapshot.val();
         }
         var myUid = FirebaseService.getUid();
-        game.participants = game.participants || {}
+        game.participants = game.participants || {};
         game.participants[myUid] = FirebaseService.getBasicInfo();
         js.gameInfo.game = game;
         js.save();
@@ -93,9 +96,10 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
 
   function keepGameSynced($scope) {
     js.gameRef.on('value', function(snapshot) {
-      js.gameInfo.game = snapshot.val();
-      $scope.game = js.gameInfo.game;
-      if(!$scope.$$phase) {
+      $scope.game = $scope.game || {};
+      angular.merge($scope.game, snapshot.val());
+      js.gameInfo.game = $scope.game;
+      if (!$scope.$$phase) {
         $scope.$apply();
       }
     });

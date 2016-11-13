@@ -11,9 +11,12 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
   
   <script src="https://www.gstatic.com/firebasejs/3.5.1/firebase.js"></script>
-  <script src="/common/common.js"></script>
+
   <script src="/dbg.js"></script>
+  <script src="/common/common.js"></script>
+
   <script src="/startswith/startswith.js"></script>
+  <script src="/avalon/index.js"></script>
 
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
@@ -21,7 +24,7 @@
 </head>
 
 <body ng-controller="DBGController">
-
+<!-- 
   <div layout="row" ng-controller="NavController">
     <md-sidenav md-component-id="left" class="md-sidenav-left">
       <md-button class="dbg-nav-option" ng-click="startNewGame('startswith')">
@@ -35,7 +38,7 @@
     <md-button ng-click="openLeftMenu()" aria-label="menu">
       <md-icon><img src="menu.svg"/></md-icon>
     </md-button>
-  </div>
+  </div> -->
 
   <div ng-view></div>
   
