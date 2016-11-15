@@ -69,6 +69,12 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
         }
         var myUid = FirebaseService.getUid();
         game.participants = game.participants || {};
+        for (var uid in game.participants) {
+          if (!game.participants[uid].lastUpdated ||
+              game.participants[uid].lastUpdated < new Date().getTime() - 60*60*1000) {
+            delete game.participants[uid];
+          }
+        }
         game.participants[myUid] = FirebaseService.getBasicInfo();
         js.gameInfo.game = game;
         js.save();
@@ -80,9 +86,12 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
     });
   };
 
-  js.save = function(game) {
-    cleanForFirebase(js.gameInfo.game);
-    js.gameRef.set(js.gameInfo.game);
+  js.save = function() {
+    var game = js.gameInfo.game;
+    game.participants = game.participants || {};
+    game.participants[FirebaseService.getUid()] = FirebaseService.getBasicInfo();
+    cleanForFirebase(game);
+    js.gameRef.set(game);
   };
   function cleanForFirebase(object) {
     for (var key in object) {
@@ -189,6 +198,7 @@ app.service('FirebaseService', function() {
       name: fire.me.displayName,
       email: fire.me.email,
       pic: fire.me.photoURL,
+      lastUpdated: new Date().getTime(),
     }
   }
 });

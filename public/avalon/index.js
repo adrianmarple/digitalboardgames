@@ -11,14 +11,14 @@ app.controller('AvalonController', function(
 
     var game = {
       quests: [
-        {outcome: "pending", participantCount: 1},
+        // {outcome: "pending", participantCount: 1},
+        // {outcome: "pending", participantCount: 2},
+        // {outcome: "pending", participantCount: 1},
         {outcome: "pending", participantCount: 2},
-        {outcome: "pending", participantCount: 1},
-        // {outcome: "pending", participantCount: 2},
-        // {outcome: "pending", participantCount: 3},
-        // {outcome: "pending", participantCount: 2},
-        // {outcome: "pending", participantCount: 3},
-        // {outcome: "pending", participantCount: 3},
+        {outcome: "pending", participantCount: 3},
+        {outcome: "pending", participantCount: 2},
+        {outcome: "pending", participantCount: 3},
+        {outcome: "pending", participantCount: 3},
       ],
       roles: false,
       team: false,
@@ -85,6 +85,9 @@ app.controller('AvalonController', function(
 
   // Game just started: assign roles
   $scope.assignRoles = function() {
+    if (!canAssignRoles()) {
+      return;
+    }
     var roles = ROLES.slice(0, Object.size($scope.game.participants));
     roles = shuffle(roles);
 
@@ -102,13 +105,17 @@ app.controller('AvalonController', function(
 
     update();
   };
+  var canAssignRoles = defaultTo(function() {
+    return Object.size($scope.game.participants) >= 5;
+  }, false);
+  $scope.canAssignRoles = canAssignRoles;
 
   // Team building phase
-  $scope.isTeamReady = isTeamReady;
   var isTeamReady = defaultTo(function() {
     var questSize = $scope.game.quests[$scope.game.quest].participantCount;
     return $scope.game.teamSize == questSize;
   }, false);
+  $scope.isTeamReady = isTeamReady;
 
   $scope.toggleTeamMember = defaultTo(function(uid) {
     if ($scope.game.assassination) {

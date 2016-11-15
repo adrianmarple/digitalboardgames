@@ -12,7 +12,10 @@
 
   <div id="actions">
     <!-- Very beginning of game -->
-    <div id="start" ng-show="!game.roles" ng-click="assignRoles()">
+    <div id="start"
+         ng-show="!game.roles"
+         ng-class="{disabled: !canAssignRoles()}"
+         ng-click="assignRoles()">
       Assign Roles
     </div>
 
