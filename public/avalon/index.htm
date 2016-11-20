@@ -29,7 +29,12 @@
       </div>
       <div class="pending"
            ng-show="game.captain != uid">
-        {{game.participants[game.captain].name}} is choosing a team.
+        {{game.participants[game.captain].name}} is choosing a team
+      </div>
+      <div ng-style="{
+          color: game.attemptsLeft == 1 ? '#d32f2f' : '#777',
+          'margin-top': '8px'}">
+        {{game.attemptsLeft}} attempt{{game.attemptsLeft == 1 ? "" : "s"}} left
       </div>
     </div>
 
@@ -57,10 +62,10 @@
       </div>
       <div id="outcome"
            ng-show="!(game.outcomes[uid] || !game.team[uid])">
-        <div ng-repeat="outcome in generateOutcomes()"
-             id="{{outcome}}"
-             ng-click="quest(outcome)">
-          {{outcome.capitalize()}}
+        <div ng-repeat="choice in outcomeChoices"
+             id="{{choice}}"
+             ng-click="quest(choice)">
+          {{choice.capitalize()}}
         </div>
       </div>
     </div>
@@ -68,7 +73,11 @@
          ng-show="game.isQuestDone"
          ng-class="game.questOutcome"
          ng-click="questContinue()">
-      <div class="outcome" ng-repeat="o in getOutcomes()" ng-class="o.indexOf('succeed') ? 'fail' : 'succeed'">
+      <div class="outcome" ng-repeat="outcome in game.outcomeList"
+           ng-class="{
+             succeed: outcome.indexOf('succeed') == 0,
+             fail: outcome.indexOf('fail') == 0,
+           }">
       </div>
       Quest {{game.questOutcome == 'good' ? 'Succeeds' : 'Fails'}}
     </div>
@@ -87,7 +96,7 @@
 
   <div id="players">
     <div class="player"
-         ng-repeat="participant in game.participants"
+         ng-repeat="participant in (game.participantList || game.participants)"
          ng-class="[canSeeEvil() ? ROLE_ALIGNMENT[game.roles[participant.uid]] : '',
            {'team-member': game.team[participant.uid]} ]"
          ng-click="toggleTeamMember(participant.uid)">

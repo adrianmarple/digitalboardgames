@@ -6,13 +6,11 @@
   border: 4px solid #757575;
   height: 144px;
   line-height: 144px;
-  font-size: 48px;
 }
 
 .pending {
   height: 144px;
   line-height: 144px;
-  font-size: 48px; 
 }
 
 .quest {
@@ -37,8 +35,8 @@
 }
 
 #actions {
-  height: 150px;
-  padding: 65px;
+  height: 200px;
+  padding: 60px;
 }
 #start, #set-team, #vote-continue, #quest-continue {
   width: 650px;
@@ -66,27 +64,30 @@
 }
 
 .outcome {
+  display: inline-block;
+}
+.succeed, .fail {
   width: 64px;
   height: 64px;
-  display: inline-block;
   filter: invert(100%);
   vertical-align: text-bottom;
 }
-.outcome.succeed {
+.succeed {
   background-image: url("/avalon/accept.svg");
 }
-.outcome.fail {
+.fail {
   background-image: url("/avalon/reject.svg");
 }
 
 
 .player {
-  margin: 24px;
+  margin: 48px;
   width: 800px;
 }
 
 .team-member {
   box-shadow: 0 0 48px white;
+  text-decoration: underline;
 }
 
 .avatar {
@@ -157,4 +158,5 @@
   width: 500px;
   margin: 50px auto;
   background-color: black;
+  font-size: 48px;
 }

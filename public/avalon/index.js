@@ -1,13 +1,14 @@
 
 app.controller('AvalonController', function(
   $scope, $interval, GameInfoService, FirebaseService) {
+  
+  var MINIMUM_TEAM_SIZE = 5;
+  var TOTAL_ATTEMPTS = 3;
 
   GameInfoService.setUpOrJoinGame($scope, createNewGame);
 
   function createNewGame() {
     console.log("Creating new game.");
-
-    // TODO fill in initialized game here.
 
     var game = {
       quests: [
@@ -31,10 +32,20 @@ app.controller('AvalonController', function(
       isQuestDone: false,
       assassination: false,
       victory: false,
+      attemptsLeft: TOTAL_ATTEMPTS,
     };
     return game;
   }
+
   $scope.visible = true;
+  $scope.outcomeChoices = generateOutcomes();
+  function generateOutcomes() {
+    if (coinFlip()) {
+      return ["succeed", "fail"];
+    } else {
+      return ["fail", "succeed"];
+    }
+  }
 
   var ROLES = [
     "merlin",
@@ -92,30 +103,27 @@ app.controller('AvalonController', function(
     roles = shuffle(roles);
 
     $scope.game.roles = {};
+    $scope.game.participantList = [];
 
     var i = 0;
-    for (var id in $scope.game.participants) {
-      $scope.game.roles[id] = roles[i];
+    for (var uid in $scope.game.participants) {
+      $scope.game.roles[uid] = roles[i];
+      $scope.game.participantList.push($scope.game.participants[uid]);
       i += 1;
     }
+    $scope.game.participantList = shuffle($scope.game.participantList);
 
-    // $scope.game.captain = Object.keys($scope.game.participants).randomElement();
-    $scope.game.captain = Object.keys($scope.game.participants)[1];
+    $scope.game.captain = $scope.game.participantList[0].uid;
     $scope.game.quest = 0;
 
     update();
   };
   var canAssignRoles = defaultTo(function() {
-    return Object.size($scope.game.participants) >= 5;
+    return Object.size($scope.game.participants) >= MINIMUM_TEAM_SIZE;
   }, false);
   $scope.canAssignRoles = canAssignRoles;
 
   // Team building phase
-  var isTeamReady = defaultTo(function() {
-    var questSize = $scope.game.quests[$scope.game.quest].participantCount;
-    return $scope.game.teamSize == questSize;
-  }, false);
-  $scope.isTeamReady = isTeamReady;
 
   $scope.toggleTeamMember = defaultTo(function(uid) {
     if ($scope.game.assassination) {
@@ -140,13 +148,10 @@ app.controller('AvalonController', function(
         $scope.game.teamSize += 1;
       }
     }
-    console.log($scope.game.teamSize);
+
     update();
   });
   $scope.setTeam = function() {
-    if (!isTeamReady()) {
-      return;
-    }
     $scope.game.finalized = true;
     update();
   }
@@ -154,17 +159,11 @@ app.controller('AvalonController', function(
   // Vote on proposed team
   $scope.vote = function(vote) {
     $scope.game.votes = $scope.game.votes || {};
-    $scope.game.votes[$scope.uid] = vote;
-    
+    $scope.game.votes[$scope.uid] = vote;    
     $scope.game.areAllVotesIn = areAllVotesIn();
     update();
-  }
-  $scope.generateOutcomes = function() {
-    if (coinFlip()) {
-      return ["succeed", "fail"];
-    } else {
-      return ["fail", "succeed"];
-    }
+
+    $scope.outcomeChoices = generateOutcomes();
   }
   function areAllVotesIn() {
     for (var uid in $scope.game.participants) {
@@ -193,12 +192,17 @@ app.controller('AvalonController', function(
       $scope.game.team = false;
       $scope.game.teamSize = 0;
       $scope.game.finalized = false;
-      // TODO keep track of number of failures to agree.
+
+      $scope.game.attemptsLeft -= 1;
+      if ($scope.game.attemptsLeft <= 0) {
+        $scope.game.quests[$scope.game.quest].outcome = "evil";
+        $scope.questContinue();
+      }
     }
     update();
   };
   function advanceCaptain() {
-    var participantUids = Object.keys($scope.game.participants);
+    var participantUids = $scope.game.participantList.map(function(p) { return p.uid});
     var captainIndex = participantUids.indexOf($scope.game.captain);
     $scope.game.captain = participantUids[(captainIndex + 1) % participantUids.length];
   }
@@ -218,6 +222,15 @@ app.controller('AvalonController', function(
       $scope.game.questOutcome = questOutcome ? "good" : "evil";
       $scope.game.quests[$scope.game.quest].outcome = $scope.game.questOutcome;
     }
+
+    var outcomes = [];
+    for (var uid in $scope.game.outcomes) {
+      outcomes.push($scope.game.outcomes[uid] + uid);
+    }
+    outcomes = outcomes.shuffle();
+    outcomes.push(outcomes.length);
+    $scope.game.outcomeList = outcomes;
+
     update();
   };
 
@@ -229,13 +242,6 @@ app.controller('AvalonController', function(
     }
     return true;
   };
-  $scope.getOutcomes = defaultTo(function() {
-    var outcomes = [];
-    for (var uid in $scope.game.outcomes) {
-      outcomes.push($scope.game.outcomes[uid] + uid);
-    }
-    return outcomes.shuffle();
-  }, []);
 
   $scope.questContinue = function() {
     $scope.game.team = false;
@@ -246,6 +252,7 @@ app.controller('AvalonController', function(
     $scope.game.quest += 1;
     $scope.game.questing = false;
     $scope.game.isQuestDone = false;
+    $scope.game.attemptsLeft = TOTAL_ATTEMPTS;
     if (didGoodWinQuests() || didEvilWinQuests()) {
       triggerEndgame();
     }
