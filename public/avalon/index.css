@@ -13,6 +13,10 @@
   line-height: 144px;
 }
 
+#quests {
+  height: 176px;
+}
+
 .quest {
   display: inline-block;
   width: 144px;
@@ -108,14 +112,17 @@
 .merlin {
   background-image: url("/avalon/merlin.jpg");
 }
-.mordred {
-  background-image: url("/avalon/mordred.jpg");
+.morgana {
+  background-image: url("/avalon/morgana.jpg");
 }
 .percival {
   background-image: url("/avalon/percival.jpg");
 }
 .assassin {
   background-image: url("/avalon/assassin.jpg");
+}
+.oberon {
+  background-image: url("/avalon/oberon.jpg");
 }
 .knight {
   background-image: url("/avalon/knight.jpg");

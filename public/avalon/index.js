@@ -4,6 +4,37 @@ app.controller('AvalonController', function(
   
   var MINIMUM_TEAM_SIZE = 5;
   var TOTAL_ATTEMPTS = 3;
+  var QUEST_PROGRESSIONS = {
+    2: [1, 2, 1],
+    5: [2, 3, 2, 3, 3],
+    6: [2, 3, 4, 3, 4],
+    7: [2, 3, 3, 4, 4],
+    8: [3, 4, 4, 5, 5],
+    9: [3, 4, 4, 5, 5],
+    10: [3, 4, 4, 5, 5],
+  };
+  var ROLES = [
+    "merlin",    // good
+    "assassin",  // evil
+    "morgana",   // evil
+    "percival",  // good
+    "knight",    // good
+    "knight",    // good
+    "oberon",    // evil
+    "knight",    // good
+    "knight",    // good
+    "minion",    // evil
+  ];
+
+  var ROLE_ALIGNMENT = {
+    merlin: "good",
+    morgana: "evil",
+    percival: "good",
+    assassin: "evil",
+    knight: "good",
+    minion: "evil",
+    oberon: "good", // but really evil
+  };
 
   GameInfoService.setUpOrJoinGame($scope, createNewGame);
 
@@ -11,16 +42,7 @@ app.controller('AvalonController', function(
     console.log("Creating new game.");
 
     var game = {
-      quests: [
-        // {outcome: "pending", participantCount: 1},
-        // {outcome: "pending", participantCount: 2},
-        // {outcome: "pending", participantCount: 1},
-        {outcome: "pending", participantCount: 2},
-        {outcome: "pending", participantCount: 3},
-        {outcome: "pending", participantCount: 2},
-        {outcome: "pending", participantCount: 3},
-        {outcome: "pending", participantCount: 3},
-      ],
+      quests: false,
       roles: false,
       team: false,
       teamSize: 0,
@@ -29,7 +51,6 @@ app.controller('AvalonController', function(
       questing: false,
       outcomes: false,
       outcome: false,
-      isQuestDone: false,
       assassination: false,
       victory: false,
       attemptsLeft: TOTAL_ATTEMPTS,
@@ -47,30 +68,13 @@ app.controller('AvalonController', function(
     }
   }
 
-  var ROLES = [
-    "merlin",
-    "assassin",
-    "mordred",
-    "percival",
-    "knight",
-    "knight",
-    "minion",
-  ];
-  $scope.ROLE_ALIGNMENT = {
-    merlin: "good",
-    mordred: "evil",
-    percival: "good",
-    assassin: "evil",
-    knight: "good",
-    minion: "evil",
-  };
 
-  $scope.canSeeEvil = defaultTo(function() {
+  $scope.canSeeEvil = defaultTo(function(uid) {
     if (!$scope.visible) {
       return false;
     }
     var myRole = $scope.game.roles[$scope.uid];
-    return myRole == "merlin" || $scope.ROLE_ALIGNMENT[myRole] == "evil";
+    return $scope.uid == uid || myRole == "merlin" || $scope.ROLE_ALIGNMENT[myRole] == "evil";
   }, false);
   $scope.apparentRole = defaultTo(function(uid) {
     if ($scope.game.finalized && $scope.game.votes[uid] != undefined) {
@@ -89,9 +93,16 @@ app.controller('AvalonController', function(
     if (uid == $scope.uid) {
       return myRole;
     }
-    if (myRole == "percival" && (role == "merlin" || role == "mordred")) {
+    if (myRole == "percival" && (role == "merlin" || role == "morgana")) {
       return "merlin";
     }
+  });
+  $scope.apparentAlignment = defaultTo(function(uid) {
+    var role = $scope.game.roles[uid];
+    if (role == "oberon" && uid == $scope.uid) {
+      return "evil";
+    }
+    return ROLE_ALIGNMENT[role];
   });
 
   // Game just started: assign roles
@@ -99,6 +110,16 @@ app.controller('AvalonController', function(
     if (!canAssignRoles()) {
       return;
     }
+    var playerCount = Object.size($scope.game.participants);
+    $scope.game.quests = [];
+    for (var i = 0; i < QUEST_PROGRESSIONS[playerCount].length; i++) {
+      $scope.game.quests.push({
+        outcome: "pending",
+        participantCount: QUEST_PROGRESSIONS[playerCount][i],
+      });
+    }
+
+
     var roles = ROLES.slice(0, Object.size($scope.game.participants));
     roles = shuffle(roles);
 
@@ -127,13 +148,15 @@ app.controller('AvalonController', function(
 
   $scope.toggleTeamMember = defaultTo(function(uid) {
     if ($scope.game.assassination) {
-      if ($scope.game.roles[uid] == "merlin") {
-        $scope.game.victory = "evil";
-      } else {
-        $scope.game.victory = "good";
+      if ($scope.game.roles[$scope.uid] == 'assassin') {
+        if ($scope.game.roles[uid] == "merlin") {
+          $scope.game.victory = "evil";
+        } else {
+          $scope.game.victory = "good";
+        }
+        $scope.game.assassination = false;
+        update();
       }
-      $scope.game.assassination = false;
-      update();
       return;
     }
 
@@ -151,7 +174,15 @@ app.controller('AvalonController', function(
 
     update();
   });
+  var isTeamReady = defaultTo(function() {
+    return $scope.game.teamSize == $scope.game.quests[$scope.game.quest].participantCount
+  }, false);
+  $scope.isTeamReady = isTeamReady;
+    
   $scope.setTeam = function() {
+    if (!isTeamReady()) {
+      return;
+    }
     $scope.game.finalized = true;
     update();
   }
@@ -211,14 +242,18 @@ app.controller('AvalonController', function(
   $scope.quest = function(outcome) {
     $scope.game.outcomes = $scope.game.outcomes || {};
     $scope.game.outcomes[$scope.uid] = outcome;
-    $scope.game.isQuestDone = isQuestDone();
 
     if (isQuestDone()) {
-      var questOutcome = true;
+      var failCount = 0;
       for (var uid in $scope.game.outcomes) {
-        console.log($scope.game.outcomes[uid] == "succeed");
-        questOutcome = questOutcome && $scope.game.outcomes[uid] == "succeed";
+        if ($scope.game.outcomes[uid] == "fail") {
+          failCount += 1;
+        }
       }
+      var questOutcome = failCount == 0 || 
+        ($scope.game.quest == 3 && 
+         $scope.game.quests[3].participantCount > 3 &&
+         failCount == 1);
       $scope.game.questOutcome = questOutcome ? "good" : "evil";
       $scope.game.quests[$scope.game.quest].outcome = $scope.game.questOutcome;
     }
@@ -234,14 +269,18 @@ app.controller('AvalonController', function(
     update();
   };
 
-  function isQuestDone() {
+  var isQuestDone = defaultTo(function() {
+    if (!$scope.game.team) {
+      return false;
+    }
     for (var uid in $scope.game.team) {
-      if ($scope.game.outcomes[uid] == undefined) {
+      if ($scope.game.team[uid] && $scope.game.outcomes[uid] == undefined) {
         return false;
       }
     }
     return true;
-  };
+  }, false);
+  $scope.isQuestDone = isQuestDone;
 
   $scope.questContinue = function() {
     $scope.game.team = false;
@@ -251,7 +290,6 @@ app.controller('AvalonController', function(
     $scope.game.finalized = false;
     $scope.game.quest += 1;
     $scope.game.questing = false;
-    $scope.game.isQuestDone = false;
     $scope.game.attemptsLeft = TOTAL_ATTEMPTS;
     if (didGoodWinQuests() || didEvilWinQuests()) {
       triggerEndgame();

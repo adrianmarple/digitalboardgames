@@ -23,7 +23,7 @@
     <div ng-show="game.roles && !game.finalized && !game.assassination && !game.victory">
       <div id="set-team"
            ng-show="game.captain == uid"
-           ng-class="{disabled: game.teamSize != game.quests[game.quest].participantCount}"
+           ng-class="{disabled: !isTeamReady()}"
            ng-click="setTeam()">
         Finalize Team
       </div>
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Carry out quest -->
-    <div ng-show="game.questing && !game.isQuestDone">
+    <div ng-show="game.questing && !isQuestDone()">
       <div class="pending"
            ng-show="game.outcomes[uid] || !game.team[uid]">
         Questing...
@@ -70,7 +70,7 @@
       </div>
     </div>
     <div id="quest-continue"
-         ng-show="game.isQuestDone"
+         ng-show="isQuestDone()"
          ng-class="game.questOutcome"
          ng-click="questContinue()">
       <div class="outcome" ng-repeat="outcome in game.outcomeList"
@@ -97,7 +97,8 @@
   <div id="players">
     <div class="player"
          ng-repeat="participant in (game.participantList || game.participants)"
-         ng-class="[canSeeEvil() ? ROLE_ALIGNMENT[game.roles[participant.uid]] : '',
+         ng-class="[canSeeEvil(participant.uid) ?
+           apparentAlignment(participant.uid) : '',
            {'team-member': game.team[participant.uid]} ]"
          ng-click="toggleTeamMember(participant.uid)">
       <img class="avatar" src="{{participant.pic}}">
