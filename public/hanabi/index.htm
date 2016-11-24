@@ -1,0 +1,134 @@
+
+<link rel="stylesheet" type="text/css" href="/hanabi/index.css">
+
+<center>
+  <div id="tableaux">
+    <div id="left-header">
+      <div id="lives">
+        {{game.lives}}
+        <img src="/hanabi/life.svg">
+      </div>
+      <div id="clues-left">
+        {{game.cluesLeft}}
+        <img src="/hanabi/clue.svg">
+      </div>
+    </div>
+    <div class="stack"
+         ng-repeat="color in COLORS"
+         ng-class="color">
+      {{game.tableaux[color]}}
+    </div>
+    <div id="right-header">
+      {{game.deck.length - game.deckPosition}}
+    </div>
+  </div>
+
+  <div id="actions">
+    <!-- Very beginning of game -->
+    <div id="start"
+         ng-show="!game.hands"
+         ng-class="{disabled: !canDeal()}"
+         ng-click="deal()">
+      Deal Cards
+    </div>
+
+    <div ng-show="game.hands && !game.previousAction && !cluee">
+      <div class="pending" ng-show="game.turn != uid">
+        {{game.participants[game.turn].shortName}}'s turn
+      </div>
+
+      <div ng-show="game.turn == uid">
+        <div id="clue" ng-click="didTapClue()"
+             ng-class="{disabled: game.cluesLeft <= 0,
+                        selected: clueing}">
+          CLUE
+        </div>
+        <div id="play" ng-click="didTapPlay()"
+             ng-class="{selected: playing}">PLAY</div>
+        <div id="discard" ng-click="didTapDiscard()"
+             ng-class="{selected: discarding}">DISCARD</div>
+      </div>
+    </div>
+
+    <div id="clues" ng-show="cluee">
+      <div>
+        <div class="card"
+             ng-repeat="color in COLORS"
+             ng-class="[color, {disabled: !clueeHasCard('color', color)}]"
+             ng-click="giveClue('color', color)">
+        </div>
+      </div>
+      <div>
+        <div class="card"
+             ng-repeat="n in [].constructor(5) track by $index"
+             ng-class="[stack.color, {disabled: !clueeHasCard('number', $index + 1)}]"
+             ng-click="giveClue('number', $index + 1)">
+          {{$index + 1}}
+        </div>
+      </div>
+    </div>
+
+    <div id="continue"
+         ng-show="game.previousAction"
+         ng-click="continue()"
+         ng-class="{explosion: game.wasExplosion}">
+      {{game.previousAction}}
+    </div>
+
+  </div>
+
+  <div id="players">
+    <div class="player"
+         ng-repeat="participant in (game.participantList || game.participants)"
+         ng-class="{
+           disabled: isPlayerDisabled(participant.uid),
+           selected: participant.uid == cluee,
+         }"
+         ng-click="didTapPlayer(participant.uid)">
+      <div class="hand">
+        <img class="avatar" src="{{participant.pic}}">
+        <div class="card"
+             ng-repeat="card in game.hands[participant.uid]"
+             ng-class="[participant.uid != uid ||
+             isSelectedCardColor(participant.uid, $index) ?
+             card.color : '',
+             {
+               absent: card.color == 'absent',
+               'show-number': participant.uid != uid ||
+                              isSelectedCardNumber(participant.uid, $index),
+               selected: isSelectedCard(participant.uid, $index),
+             }]"
+             ng-click="didTapCard($index)">
+          {{card.number}}
+        </div>
+        <div class="history" ng-click="showHistory(participant.uid)"></div>
+      </div>
+
+      <div ng-show="historyTarget == participant.uid">
+        <div class="history-entry"
+             ng-class="historyEntry[0].type"
+             ng-repeat="historyEntry in game.history[participant.uid]">
+          <div class="card"
+               ng-repeat="card in historyEntry"
+               ng-class="[card.color, {
+                 'no-info': !card.color && !card.number,
+               }]">
+            {{card.number ? card.number : ''}}
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-over"
+       class="banner"
+       ng-show="game.gameOver">
+    GAME OVER
+    <br>
+    You scored {{score()}}
+
+    <div id="new-game" ng-click="deal()">
+      New Game
+    </div>
+  </div>
+
+</center>

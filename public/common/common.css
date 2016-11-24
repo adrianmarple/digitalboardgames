@@ -42,10 +42,20 @@ div {
 	cursor: pointer;
 }
 
+
 .avatar {
-	width: 24px;
-	height: 24px;
+  float: left;
+  width: 144px;
+  height: 144px;
 	border-radius: 1000px;
+}
+.disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+.selected {
+  box-shadow: 0 0 48px white;
 }
 
 .md-sidenav-left {

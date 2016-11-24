@@ -10,6 +10,10 @@ app.config(['$routeProvider', function($routeProvider) {
       templateUrl : "/avalon/index.htm",
       controller: "AvalonController",
   })
+  .when("/hanabi", {
+      templateUrl : "/hanabi/index.htm",
+      controller: "HanabiController",
+  })
   .when("/startswith", {
       templateUrl : "/startswith/startswith.htm",
       controller: "StartsWithController",
@@ -196,6 +200,7 @@ app.service('FirebaseService', function() {
     return {
       uid: fire.me.uid,
       name: fire.me.displayName,
+      shortName: fire.me.displayName.split(" ")[0],
       email: fire.me.email,
       pic: fire.me.photoURL,
       lastUpdated: new Date().getTime(),
