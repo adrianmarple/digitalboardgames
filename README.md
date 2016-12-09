@@ -3,7 +3,7 @@
 ## Getting Started
 * Install npm
 * `sudo npm install -g firebase-tools`
-* `sudo npm install firebase-bolt`
+* `sudo npm install -g firebase-bolt`
 * `firebase login`
 * `firebase serve`
 * Navigate to [localhost:5000](http://localhost:5000)

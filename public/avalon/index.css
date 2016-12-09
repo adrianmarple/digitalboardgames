@@ -34,18 +34,23 @@
 }
 
 #actions {
-  height: 200px;
+  height: 240px;
   padding: 60px;
 }
 #start, #set-team, #vote-continue, #quest-continue {
   width: 650px;
-  margin: 0 48px;
+  margin: -220px 48px 0;
   cursor: pointer;
   background-color: #424242;
 }
 #start:hover {
   background-color: #616161;
   border-color: #E0E0E0;
+}
+
+.special-roles {
+  display: block;
+  width: 300px;
 }
 
 #accept, #reject, #succeed, #fail {

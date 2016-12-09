@@ -18,6 +18,14 @@
          ng-click="assignRoles()">
       Assign Roles
     </div>
+    <md-checkbox class="special-roles"
+         ng-model="game.specialRoles[role]"
+         ng-repeat="role in specialRoles"
+         ng-change="selectedSpecialRole(role)"
+         ng-disabled="!isSpecialRoleAvailable(role)"
+         ng-show="!game.roles">
+      {{role.capitalize()}}
+    </md-checkbox>
 
     <!-- Establish a team -->
     <div ng-show="game.roles && !game.finalized && !game.assassination && !game.victory">

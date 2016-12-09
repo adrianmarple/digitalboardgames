@@ -64,12 +64,15 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
       if (!js.gameRef) {
         js.createGame($location.url());
       }
+
       js.gameRef.once('value').then(function(snapshot) {
-        if (!snapshot.val()) {
+        game = snapshot.val();
+        // No game or game is over an hour old.
+        if (!game || game.timestamp < new Date().getTime() - 60*60*1000) {
+          console.log("Game expired.");
           game = createNewGame();
         } else {
           console.log("Joining game.");
-          game = snapshot.val();
         }
         var myUid = FirebaseService.getUid();
         game.participants = game.participants || {};
@@ -92,6 +95,7 @@ app.service('GameInfoService', function($location, $routeParams, FirebaseService
 
   js.save = function() {
     var game = js.gameInfo.game;
+    game.timestamp = new Date().getTime();
     game.participants = game.participants || {};
     game.participants[FirebaseService.getUid()] = FirebaseService.getBasicInfo();
     cleanForFirebase(game);
@@ -164,12 +168,12 @@ app.service('FirebaseService', function() {
     fire.locationsRef = firebase.database().ref("locations");
     fire.gamesRef = firebase.database().ref("games");
 
-    setMyLocation(function() {
+    // setMyLocation(function() {
       for (var i = 0; i < fire.waitingFunctions.length; i++) {
         fire.waitingFunctions[i]();
       }
       fire.waitingFunctions = [];
-    });
+    // });
   }
 
   function setMyLocation(callback) {
@@ -202,7 +206,7 @@ app.service('FirebaseService', function() {
       name: fire.me.displayName,
       shortName: fire.me.displayName.split(" ")[0],
       email: fire.me.email,
-      pic: fire.me.photoURL,
+      pic: fire.me.photoURL.replace("photo.jpg", "w160-h160/photo.jpg"),
       lastUpdated: new Date().getTime(),
     }
   }
@@ -240,6 +244,9 @@ app.controller('DBGController', function(
 
   function findLocalGames() {
     var location = FirebaseService.location;
+    if (!location) {
+      return;
+    }
     var approxLat = approximateCoordinate(location.lat);
     var approxLong = approximateCoordinate(location.long);
     var myGridSquareRef = FirebaseService.locationsRef.child(approxLat).child(approxLong);

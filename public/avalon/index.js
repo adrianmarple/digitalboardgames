@@ -2,7 +2,7 @@
 app.controller('AvalonController', function(
   $scope, $interval, GameInfoService, FirebaseService) {
   
-  var MINIMUM_TEAM_SIZE = 5;
+  var MINIMUM_PLAYER_COUNT = 5;
   var TOTAL_ATTEMPTS = 3;
   var QUEST_PROGRESSIONS = {
     2: [1, 2, 1],
@@ -13,17 +13,25 @@ app.controller('AvalonController', function(
     9: [3, 4, 4, 5, 5],
     10: [3, 4, 4, 5, 5],
   };
-  var ROLES = [
+
+  var ALIGNMENT_NUMBERS = {
+    1: {good: 3, evil: 2},
+    2: {good: 3, evil: 2},
+    3: {good: 3, evil: 2},
+    4: {good: 3, evil: 2},
+    6: {good: 4, evil: 2},
+    7: {good: 4, evil: 3},
+    8: {good: 5, evil: 3},
+    9: {good: 6, evil: 3},
+    10: {good: 6, evil: 4},
+  }
+
+  $scope.specialRoles = [
     "merlin",    // good
     "assassin",  // evil
     "morgana",   // evil
     "percival",  // good
-    "knight",    // good
-    "knight",    // good
     "oberon",    // evil
-    "knight",    // good
-    "knight",    // good
-    "minion",    // evil
   ];
 
   var ROLE_ALIGNMENT = {
@@ -33,7 +41,7 @@ app.controller('AvalonController', function(
     assassin: "evil",
     knight: "good",
     minion: "evil",
-    oberon: "good", // but really evil
+    oberon: "evil", // but looks good
   };
 
   GameInfoService.setUpOrJoinGame($scope, createNewGame);
@@ -68,13 +76,73 @@ app.controller('AvalonController', function(
     }
   }
 
+  function playerCount() {
+    return Object.size($scope.game.participants);
+  }
+
+  $scope.selectedSpecialRole = function (role) {
+    if (role == 'merlin') {
+      $scope.game.specialRoles.assassin = !$scope.game.specialRoles.assassin;
+    }
+    if (role == 'assassin') {
+      $scope.game.specialRoles.merlin = !$scope.game.specialRoles.merlin;
+    }
+    if (!$scope.game.specialRoles.merlin) {
+      $scope.game.specialRoles.morgana = false;
+      $scope.game.specialRoles.percival = false;
+    }
+
+    if (role == 'morgana') {
+      $scope.game.specialRoles.percival = !$scope.game.specialRoles.percival;
+    }
+    if (role == 'percival') {
+      $scope.game.specialRoles.morgana = !$scope.game.specialRoles.morgana;
+    }
+    update();
+  };
+  $scope.isSpecialRoleAvailable = function (role) {
+    if (!$scope.game) {
+      return false;
+    }
+    $scope.game.specialRoles = $scope.game.specialRoles || {};
+
+    if ($scope.game.specialRoles[role]) {
+      return true;
+    }
+
+    if ((ROLE_ALIGNMENT[role] == "evil" || role == "merlin" || role == "percival") &&
+        specialAlignmentCount("evil") >= ALIGNMENT_NUMBERS[playerCount()].evil) {
+      return false;
+    }
+    if ((ROLE_ALIGNMENT[role] == "good" || role == "assassin" || role == "morgana") &&
+        specialAlignmentCount("good") >= ALIGNMENT_NUMBERS[playerCount()].good) {
+      return false;
+    }
+
+    if (role == "morgana" || role == "percival") {
+      return $scope.game.specialRoles.merlin;
+    }
+    return true;
+  }
+
+  function specialAlignmentCount(alignment) {
+    var count = 0;
+    for (var role in $scope.game.specialRoles) {
+      if ($scope.game.specialRoles[role] &&
+          ROLE_ALIGNMENT[role] == alignment) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
 
   $scope.canSeeEvil = defaultTo(function(uid) {
     if (!$scope.visible) {
       return false;
     }
     var myRole = $scope.game.roles[$scope.uid];
-    return $scope.uid == uid || myRole == "merlin" || $scope.ROLE_ALIGNMENT[myRole] == "evil";
+    return $scope.uid == uid || myRole == "merlin" || ROLE_ALIGNMENT[myRole] == "evil";
   }, false);
   $scope.apparentRole = defaultTo(function(uid) {
     if ($scope.game.finalized && $scope.game.votes[uid] != undefined) {
@@ -99,8 +167,8 @@ app.controller('AvalonController', function(
   });
   $scope.apparentAlignment = defaultTo(function(uid) {
     var role = $scope.game.roles[uid];
-    if (role == "oberon" && uid == $scope.uid) {
-      return "evil";
+    if (role == "oberon" && uid != $scope.uid) {
+      return "good";
     }
     return ROLE_ALIGNMENT[role];
   });
@@ -110,17 +178,32 @@ app.controller('AvalonController', function(
     if (!canAssignRoles()) {
       return;
     }
-    var playerCount = Object.size($scope.game.participants);
     $scope.game.quests = [];
-    for (var i = 0; i < QUEST_PROGRESSIONS[playerCount].length; i++) {
+    for (var i = 0; i < QUEST_PROGRESSIONS[playerCount()].length; i++) {
       $scope.game.quests.push({
         outcome: "pending",
-        participantCount: QUEST_PROGRESSIONS[playerCount][i],
+        participantCount: QUEST_PROGRESSIONS[playerCount()][i],
       });
     }
 
 
-    var roles = ROLES.slice(0, Object.size($scope.game.participants));
+    var roles = [];
+    for (var role in $scope.game.specialRoles) {
+      if ($scope.game.specialRoles[role]) {
+        roles.push(role);
+      }
+    }
+    var knightsNeeded = ALIGNMENT_NUMBERS[playerCount()].good;
+    knightsNeeded -= specialAlignmentCount("good");
+    for (; knightsNeeded > 0; knightsNeeded--) {
+      roles.push("knight");
+    }
+    var minionsNeeded = ALIGNMENT_NUMBERS[playerCount()].evil;
+    minionsNeeded -= specialAlignmentCount("evil");
+    for (; minionsNeeded > 0; minionsNeeded--) {
+      roles.push("minion");
+    }
+
     roles = shuffle(roles);
 
     $scope.game.roles = {};
@@ -139,8 +222,9 @@ app.controller('AvalonController', function(
 
     update();
   };
+
   var canAssignRoles = defaultTo(function() {
-    return Object.size($scope.game.participants) >= MINIMUM_TEAM_SIZE;
+    return playerCount() >= MINIMUM_PLAYER_COUNT;
   }, false);
   $scope.canAssignRoles = canAssignRoles;
 
@@ -316,7 +400,11 @@ app.controller('AvalonController', function(
   // End game
   function triggerEndgame() {
     if (didGoodWinQuests()) {
-      $scope.game.assassination = true;
+      if ($scope.game.specialRoles.assassin) {
+        $scope.game.assassination = true;
+      } else {
+        $scope.game.victory = "good";
+      }
     } else {
       $scope.game.victory = "evil";
     }
