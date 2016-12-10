@@ -19,6 +19,7 @@ app.controller('AvalonController', function(
     2: {good: 3, evil: 2},
     3: {good: 3, evil: 2},
     4: {good: 3, evil: 2},
+    5: {good: 3, evil: 2},
     6: {good: 4, evil: 2},
     7: {good: 4, evil: 3},
     8: {good: 5, evil: 3},

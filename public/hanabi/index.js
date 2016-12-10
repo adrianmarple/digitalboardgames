@@ -167,7 +167,7 @@ app.controller('HanabiController', function(
     update();
   }
 
-  $scope.showHistory = function(uid) {
+  $scope.toggleHistory = function(uid) {
     if ($scope.historyTarget == uid) {
       $scope.historyTarget = "";
     } else {
@@ -189,7 +189,7 @@ app.controller('HanabiController', function(
       }
       historyEntry.push(cardHistory);
     }
-    addToHistory($scope.cluee, historyEntry);
+    addToHistory($scope.cluee, historyEntry, false);
 
     var previousAction = $scope.game.participants[$scope.uid].shortName;
     previousAction += " revealed ";
@@ -224,7 +224,7 @@ app.controller('HanabiController', function(
 
     $scope.game.previousAction = "";
     advancePlayer();
-    if (playerMissingCard($scope.game.turn)) {
+    if (isPlayerMissingCard($scope.game.turn)) {
       $scope.game.gameOver = true;
     }
     update();
@@ -233,8 +233,8 @@ app.controller('HanabiController', function(
   function addToHistory(uid, event, index) {
     $scope.game.previousEvent = {
       uid: uid,
-      event: event,
-      index: index || false,
+      event: angular.copy(event),
+      index: index,
     };
     $scope.game.history = $scope.game.history || {};
     $scope.game.history[uid] = $scope.game.history[uid] || [];
@@ -288,7 +288,7 @@ app.controller('HanabiController', function(
     $scope.game.turn = participantUids[(captainIndex + 1) % participantUids.length];
   }
 
-  function playerMissingCard(uid) {
+  function isPlayerMissingCard(uid) {
     var hand = $scope.game.hands[uid];
     for (var i = 0; i < hand.length; i++) {
       if (hand[i].type == "absent") {

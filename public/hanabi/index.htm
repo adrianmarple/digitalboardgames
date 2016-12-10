@@ -101,10 +101,11 @@
              ng-click="didTapCard($index)">
           {{card.number}}
         </div>
-        <div class="history" ng-click="showHistory(participant.uid)"></div>
+        <div class="history" ng-click="toggleHistory(participant.uid)"></div>
       </div>
 
-      <div ng-show="historyTarget == participant.uid">
+      <div ng-show="historyTarget == participant.uid"
+           ng-click="toggleHistory(participant.uid)">
         <div class="history-entry"
              ng-class="historyEntry[0].type"
              ng-repeat="historyEntry in game.history[participant.uid]">

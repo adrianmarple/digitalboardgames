@@ -39,9 +39,12 @@
 }
 #start, #set-team, #vote-continue, #quest-continue {
   width: 650px;
-  margin: -220px 48px 0;
+  margin: 0 48px;
   cursor: pointer;
   background-color: #424242;
+}
+#start {
+  margin-top: -220px;
 }
 #start:hover {
   background-color: #616161;
