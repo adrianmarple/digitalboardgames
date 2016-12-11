@@ -209,7 +209,7 @@ app.controller('HanabiController', function(
 
   $scope.continue = function() {
     var index = $scope.game.previousEvent.index;
-    if (index) {
+    if (index || index == 0) {
       var hand = $scope.game.hands[$scope.game.turn];
       if ($scope.game.deckPosition < $scope.game.deck.length) {
         hand[index] = $scope.game.deck[$scope.game.deckPosition];
