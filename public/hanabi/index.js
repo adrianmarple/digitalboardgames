@@ -79,16 +79,19 @@ app.controller('HanabiController', function(
     $scope.clueing = !$scope.clueing;
     $scope.playing = false;
     $scope.discarding = false;
+    $scope.cluee = false;
   };
   $scope.didTapPlay = function() {
     $scope.clueing = false;
     $scope.playing = !$scope.playing;
     $scope.discarding = false;
+    $scope.cluee = false;
   };
   $scope.didTapDiscard = function() {
     $scope.clueing = false;
     $scope.playing = false;
     $scope.discarding = !$scope.discarding;
+    $scope.cluee = false;
   };
 
   $scope.didTapPlayer = function(uid) {
@@ -164,7 +167,6 @@ app.controller('HanabiController', function(
       historyEntry.push(cardHistory);
     }
     addToHistory($scope.uid, historyEntry, index);
-    update();
   }
 
   $scope.toggleHistory = function(uid) {
@@ -189,7 +191,6 @@ app.controller('HanabiController', function(
       }
       historyEntry.push(cardHistory);
     }
-    addToHistory($scope.cluee, historyEntry, false);
 
     var previousAction = $scope.game.participants[$scope.uid].shortName;
     previousAction += " revealed ";
@@ -200,16 +201,23 @@ app.controller('HanabiController', function(
 
     $scope.game.cluesLeft -= 1;
 
+    addToHistory($scope.cluee, historyEntry, -1);
     $scope.cluee = null;
     $scope.clueing = false;
-
-    update();
   };
 
 
-  $scope.continue = function() {
-    var index = $scope.game.previousEvent.index;
-    if (index || index == 0) {
+  function addToHistory(uid, event, index) {
+    $scope.game.previousEvent = {
+      uid: uid,
+      event: angular.copy(event),
+      index: index,
+    };
+    $scope.game.history = $scope.game.history || {};
+    $scope.game.history[uid] = $scope.game.history[uid] || [];
+    $scope.game.history[uid].unshift(event);
+
+    if (index >= 0) {
       var hand = $scope.game.hands[$scope.game.turn];
       if ($scope.game.deckPosition < $scope.game.deck.length) {
         hand[index] = $scope.game.deck[$scope.game.deckPosition];
@@ -222,24 +230,12 @@ app.controller('HanabiController', function(
       }
     }
 
-    $scope.game.previousAction = "";
     advancePlayer();
     if (isPlayerMissingCard($scope.game.turn)) {
       $scope.game.gameOver = true;
     }
     update();
   };
-
-  function addToHistory(uid, event, index) {
-    $scope.game.previousEvent = {
-      uid: uid,
-      event: angular.copy(event),
-      index: index,
-    };
-    $scope.game.history = $scope.game.history || {};
-    $scope.game.history[uid] = $scope.game.history[uid] || [];
-    $scope.game.history[uid].unshift(event);
-  }
 
   $scope.clueeHasCard = defaultTo(function(type, value) {
     var hand = $scope.game.hands[$scope.cluee];
@@ -259,27 +255,35 @@ app.controller('HanabiController', function(
     }
   };
 
-  $scope.isSelectedCardColor = defaultTo(function(uid, index) {
+  $scope.selectedCardColor = defaultTo(function(uid, index) {
+    if ($scope.dismissed == $scope.game.turn) {
+      return '';
+    }
     if (!$scope.game.previousAction || uid != $scope.game.previousEvent.uid) {
-      return;
+      return '';
     }
     var eventCard = $scope.game.previousEvent.event[index];
     if (eventCard.color) {
-      return true;
+      return eventCard.color;
     }
+    return '';
   }, false);
-  $scope.isSelectedCardNumber = defaultTo(function(uid, index) {
+  $scope.selectedCardNumber = defaultTo(function(uid, index) {
+    if ($scope.dismissed == $scope.game.turn) {
+      return '';
+    }
     if (!$scope.game.previousAction || uid != $scope.game.previousEvent.uid) {
-      return;
+      return '';
     }
     var eventCard = $scope.game.previousEvent.event[index];
     if (eventCard.number) {
-      return true;
+      return eventCard.number;
     }
+    return '';
   }, false);
   $scope.isSelectedCard = function(uid, index) {
-    return $scope.isSelectedCardColor(uid, index) ||
-        $scope.isSelectedCardNumber(uid, index);
+    return $scope.selectedCardColor(uid, index) ||
+        $scope.selectedCardNumber(uid, index);
   };
 
   function advancePlayer() {

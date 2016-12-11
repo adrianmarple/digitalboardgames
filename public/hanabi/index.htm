@@ -32,7 +32,8 @@
       Deal Cards
     </div>
 
-    <div ng-show="game.hands && !game.previousAction && !cluee">
+    <div ng-show="game.hands &&
+                  (!game.previousAction || dismissed == game.turn)">
       <div class="pending" ng-show="game.turn != uid">
         {{game.participants[game.turn].shortName}}'s turn
       </div>
@@ -50,27 +51,9 @@
       </div>
     </div>
 
-    <div id="clues" ng-show="cluee">
-      <div>
-        <div class="card"
-             ng-repeat="color in COLORS"
-             ng-class="[color, {disabled: !clueeHasCard('color', color)}]"
-             ng-click="giveClue('color', color)">
-        </div>
-      </div>
-      <div>
-        <div class="card"
-             ng-repeat="n in [].constructor(5) track by $index"
-             ng-class="[stack.color, {disabled: !clueeHasCard('number', $index + 1)}]"
-             ng-click="giveClue('number', $index + 1)">
-          {{$index + 1}}
-        </div>
-      </div>
-    </div>
-
     <div id="continue"
-         ng-show="game.previousAction"
-         ng-click="continue()"
+         ng-show="game.previousAction && dismissed != game.turn"
+         ng-click="dismissed = game.turn"
          ng-class="{explosion: game.wasExplosion}">
       {{game.previousAction}}
     </div>
@@ -85,21 +68,40 @@
            selected: participant.uid == cluee,
          }"
          ng-click="didTapPlayer(participant.uid)">
+
+      <div id="clues" ng-show="cluee == participant.uid">
+        <div>
+          <div class="card"
+               ng-repeat="color in COLORS"
+               ng-class="[color, {disabled: !clueeHasCard('color', color)}]"
+               ng-click="giveClue('color', color)">
+          </div>
+        </div>
+        <div>
+          <div class="card"
+               ng-repeat="n in [].constructor(5) track by $index"
+               ng-class="[stack.color, {disabled: !clueeHasCard('number', $index + 1)}]"
+               ng-click="giveClue('number', $index + 1)">
+            {{$index + 1}}
+          </div>
+        </div>
+      </div>
+
       <div class="hand">
         <img class="avatar" src="{{participant.pic}}">
         <div class="card"
              ng-repeat="card in game.hands[participant.uid]"
-             ng-class="[participant.uid != uid ||
-             isSelectedCardColor(participant.uid, $index) ?
-             card.color : '',
+             ng-class="[selectedCardColor(participant.uid, $index) ||
+             (participant.uid != uid ? card.color : ''),
              {
                absent: card.color == 'absent',
                'show-number': participant.uid != uid ||
-                              isSelectedCardNumber(participant.uid, $index),
+                              selectedCardNumber(participant.uid, $index),
                selected: isSelectedCard(participant.uid, $index),
              }]"
              ng-click="didTapCard($index)">
-          {{card.number}}
+          {{selectedCardNumber(participant.uid, $index) ||
+             (participant.uid != uid ? card.number : '')}}
         </div>
         <div class="history" ng-click="toggleHistory(participant.uid)"></div>
       </div>

@@ -121,6 +121,9 @@
   border-color: #601807;
 }
 
+#clues {
+  margin: 16px 0;
+}
 #clues .card {
   margin: 0 20px;
 }
